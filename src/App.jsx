@@ -529,7 +529,30 @@ function Sidebar({ active, onNav, onSignOut, user }) {
   );
 }
 
-function TopBar({ title, subtitle }) {
+function TopBar({ title, subtitle, users = [], onUserSelect }) {
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [showNotifications, setShowNotifications] = useState(false);
+  const searchRef = useRef(null);
+  const notifRef = useRef(null);
+
+  const results = query.trim()
+    ? users.filter(u => u.name.toLowerCase().includes(query.toLowerCase()))
+    : [];
+
+  useEffect(() => {
+    const handler = e => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false); setQuery("");
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   return (
     <div style={{ background:C.white, borderBottom:`1px solid ${C.border}`, padding:"16px 28px", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
       <div>
@@ -537,11 +560,53 @@ function TopBar({ title, subtitle }) {
         {subtitle && <p style={{ margin:0, fontFamily:F, fontSize:13, color:C.textSecondary, marginTop:2 }}>{subtitle}</p>}
       </div>
       <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-        <div style={{ background:C.pageBg, border:`1px solid ${C.border}`, borderRadius:999, padding:"9px 20px", display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
-          <span style={{ fontSize:13 }}>🔍</span>
-          <span style={{ fontFamily:F, fontSize:13, color:C.textMuted }}>Search Bridges...</span>
+        {/* Search */}
+        <div ref={searchRef} style={{ position:"relative" }}>
+          {searchOpen ? (
+            <input
+              autoFocus
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search users..."
+              style={{ background:C.pageBg, border:`1.5px solid ${C.accent}`, borderRadius:999, padding:"9px 20px", fontFamily:F, fontSize:13, color:C.textPrimary, outline:"none", width:220 }}
+            />
+          ) : (
+            <div onClick={() => setSearchOpen(true)} style={{ background:C.pageBg, border:`1px solid ${C.border}`, borderRadius:999, padding:"9px 20px", display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+              <span style={{ fontSize:13 }}>🔍</span>
+              <span style={{ fontFamily:F, fontSize:13, color:C.textMuted }}>Search users...</span>
+            </div>
+          )}
+          {searchOpen && query.trim() && (
+            <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, right:0, background:C.white, border:`1px solid ${C.border}`, borderRadius:14, boxShadow:"0 8px 24px rgba(13,27,42,0.1)", zIndex:200, overflow:"hidden" }}>
+              {results.length > 0 ? results.map(u => (
+                <div key={u.id} onClick={() => { onUserSelect?.(u); setSearchOpen(false); setQuery(""); }}
+                  style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px", cursor:"pointer", fontFamily:F, fontSize:14, color:C.textPrimary }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.hover}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <div style={{ width:28, height:28, borderRadius:"50%", background:u.color||C.accent, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:11, fontWeight:700 }}>
+                    {u.name.split(" ").map(w=>w[0]).join("")}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight:600 }}>{u.name}</div>
+                    <div style={{ fontSize:11, color:u.online?C.online:C.textMuted }}>{u.online?"● Online":"○ Offline"}</div>
+                  </div>
+                </div>
+              )) : (
+                <div style={{ padding:"12px 16px", fontFamily:F, fontSize:13, color:C.textMuted }}>No users found for "{query}"</div>
+              )}
+            </div>
+          )}
         </div>
-        <span style={{ fontSize:20, cursor:"pointer" }}>🔔</span>
+        {/* Notifications */}
+        <div ref={notifRef} style={{ position:"relative" }}>
+          <span onClick={() => setShowNotifications(v => !v)} style={{ fontSize:20, cursor:"pointer" }}>🔔</span>
+          {showNotifications && (
+            <div style={{ position:"absolute", top:"calc(100% + 8px)", right:0, width:280, background:C.white, border:`1px solid ${C.border}`, borderRadius:14, boxShadow:"0 8px 24px rgba(13,27,42,0.1)", zIndex:200, overflow:"hidden" }}>
+              <div style={{ padding:"14px 16px", borderBottom:`1px solid ${C.border}`, fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary }}>Notifications</div>
+              <div style={{ padding:"24px 16px", textAlign:"center", fontFamily:F, fontSize:13, color:C.textMuted }}>🎉 You're all caught up!</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -605,13 +670,24 @@ function DashboardScreen({ user, onNav, appData }) {
 }
 
 // ── Messages ──────────────────────────────────────────────────────────────────
-function MessagesScreen({ appData, onUpdateData }) {
-  const [selected, setSelected] = useState(null);
+function MessagesScreen({ appData, onUpdateData, initialSelectedId, onClearSelectedId }) {
+  const [selected, setSelected] = useState(initialSelectedId || null);
   const [input, setInput] = useState("");
-  const [chats, setChats] = useState([
-    { id:1, name:"Alex Rivera", color:"#34D399", online:true, messages:[{ id:1, text:"Hey! How's the Bridges build going?", mine:false, time:"10:32 AM" }] },
-    { id:2, name:"Jordan Lee", color:"#F472B6", online:false, messages:[{ id:1, text:"Can we sync on the community feature?", mine:false, time:"Yesterday" }] },
-  ]);
+  const [chats, setChats] = useState(
+    MOCK_USERS.map((u, i) => ({
+      ...u,
+      messages: i === 0
+        ? [{ id:1, text:"Hey! How's the Bridges build going?", mine:false, time:"10:32 AM" }]
+        : [{ id:1, text:"Can we sync on the community feature?", mine:false, time:"Yesterday" }],
+    }))
+  );
+
+  useEffect(() => {
+    if (initialSelectedId) {
+      setSelected(initialSelectedId);
+      onClearSelectedId?.();
+    }
+  }, [initialSelectedId]);
   const active = chats.find(c => c.id === selected);
   const send = () => {
     if (!input.trim() || !selected) return;
@@ -720,7 +796,7 @@ function CommunityScreen({ appData, onUpdateData }) {
                     <div style={{ flex:1 }}>
                       <div style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary }}>{p.author} <span style={{ fontWeight:400, color:C.textMuted, fontSize:12 }}>{p.time}</span></div>
                       <p style={{ fontFamily:F, fontSize:14, color:C.textPrimary, margin:"6px 0 12px", lineHeight:1.55 }}>{p.text}</p>
-                      <span style={{ fontFamily:F, fontSize:12, color:C.textMuted }}>❤️ {p.likes}</span>
+                      <span onClick={() => setPosts(prev => prev.map(x => x.id===p.id ? { ...x, likes:x.likes+1 } : x))} style={{ fontFamily:F, fontSize:12, color:C.textMuted, cursor:"pointer" }}>❤️ {p.likes}</span>
                     </div>
                   </div>
                 </Card>
@@ -916,18 +992,21 @@ function ProfileScreen({ user, onUpdate }) {
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────
-function SettingsScreen({ onSignOut }) {
+function SettingsScreen({ user, onSignOut, onUpdate }) {
+  const savedSettings = user?.settings || {};
   const [confirmSignOut, setConfirmSignOut] = useState(false);
-  const [notifications, setNotifications] = useState(true);
-  const [emailDigest, setEmailDigest] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [notifications, setNotifications] = useState(savedSettings.notifications ?? true);
+  const [emailDigest, setEmailDigest] = useState(savedSettings.emailDigest ?? false);
+  const [darkMode, setDarkMode] = useState(false); // dark mode not yet implemented
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const saveSettings = async () => {
     setSaving(true);
-    await supabase.auth.updateUser({ data: { settings:{ notifications, emailDigest, darkMode } } });
+    const newSettings = { notifications, emailDigest };
+    await supabase.auth.updateUser({ data: { settings: newSettings } });
     setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000);
+    onUpdate?.({ settings: newSettings });
   };
 
   const Toggle = ({ value, onChange }) => (
@@ -954,12 +1033,13 @@ function SettingsScreen({ onSignOut }) {
         </Card>
         <Card style={{ padding:24, marginBottom:20 }}>
           <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary, marginBottom:18 }}>Appearance</div>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 0" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 0", opacity:0.5 }}>
             <div>
               <div style={{ fontFamily:F, fontWeight:600, fontSize:14, color:C.textPrimary }}>Dark mode</div>
               <div style={{ fontFamily:F, fontSize:12, color:C.textMuted, marginTop:2 }}>Coming soon</div>
             </div>
-            <Toggle value={darkMode} onChange={setDarkMode} />
+            {/* Disabled — not yet implemented */}
+            <Toggle value={darkMode} onChange={() => {}} />
           </div>
         </Card>
         <div style={{ marginBottom:20 }}><Btn onClick={saveSettings} loading={saving}>Save Settings</Btn></div>
@@ -987,23 +1067,41 @@ const TITLES = {
   profile:["Profile","Manage your account"], settings:["Settings","Customize your experience"],
 };
 
+// Shared user directory — used by both MessagesScreen and TopBar search
+const MOCK_USERS = [
+  { id:1, name:"Alex Rivera", color:"#34D399", online:true },
+  { id:2, name:"Jordan Lee", color:"#F472B6", online:false },
+];
+
 function MainApp({ user, onSignOut, onUpdateUser }) {
   const [tab, setTab] = useState("dashboard");
+  const [selectedChatId, setSelectedChatId] = useState(null);
   const [appData, setAppData] = useState({ messages:[], communities:[], projects:[], events:[] });
   const updateData = patch => setAppData(d => ({ ...d, ...patch }));
   const [title, subtitle] = TITLES[tab] || ["Bridges",""];
+
+  const handleUserSelect = (u) => {
+    setSelectedChatId(u.id);
+    setTab("messages");
+  };
+
   return (
     <div style={{ display:"flex", height:"100vh", overflow:"hidden", fontFamily:F, background:C.pageBg }}>
       <Sidebar active={tab} onNav={setTab} onSignOut={onSignOut} user={user} />
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        <TopBar title={tab==="dashboard"?`Welcome, ${user?.name?.split(" ")[0]||"there"} 👋`:title} subtitle={subtitle} />
+        <TopBar
+          title={tab==="dashboard"?`Welcome, ${user?.name?.split(" ")[0]||"there"} 👋`:title}
+          subtitle={subtitle}
+          users={MOCK_USERS}
+          onUserSelect={handleUserSelect}
+        />
         <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
           {tab==="dashboard" && <DashboardScreen user={user} onNav={setTab} appData={appData} />}
-          {tab==="messages"  && <MessagesScreen appData={appData} onUpdateData={updateData} />}
+          {tab==="messages"  && <MessagesScreen appData={appData} onUpdateData={updateData} initialSelectedId={selectedChatId} onClearSelectedId={() => setSelectedChatId(null)} />}
           {tab==="community" && <CommunityScreen appData={appData} onUpdateData={updateData} />}
           {tab==="projects"  && <ProjectsScreen appData={appData} onUpdateData={updateData} />}
           {tab==="profile"   && <ProfileScreen user={user} onUpdate={onUpdateUser} />}
-          {tab==="settings"  && <SettingsScreen onSignOut={onSignOut} />}
+          {tab==="settings"  && <SettingsScreen user={user} onSignOut={onSignOut} onUpdate={onUpdateUser} />}
         </div>
       </div>
     </div>
@@ -1039,7 +1137,7 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         const meta = session.user.user_metadata || {};
-        setUser({ id:session.user.id, email:session.user.email, name:meta.full_name||meta.name||session.user.email?.split("@")[0]||"User", role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"" });
+        setUser({ id:session.user.id, email:session.user.email, name:meta.full_name||meta.name||session.user.email?.split("@")[0]||"User", role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"", settings:meta.settings||{} });
         setScreen(meta.onboarded ? "app" : "onboarding");
       } else {
         setScreen("landing");
@@ -1050,7 +1148,7 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         const meta = session.user.user_metadata || {};
-        const u = { id:session.user.id, email:session.user.email, name:meta.full_name||meta.name||session.user.email?.split("@")[0]||"User", role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"" };
+        const u = { id:session.user.id, email:session.user.email, name:meta.full_name||meta.name||session.user.email?.split("@")[0]||"User", role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"", settings:meta.settings||{} };
         setUser(u);
         setScreen(s => s === "loading" ? (meta.onboarded ? "app" : "onboarding") : s);
       } else {
