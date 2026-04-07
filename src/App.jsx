@@ -133,8 +133,21 @@ function PolicyPage({ type, onBack, onAccept }) {
   );
 }
 
+// ── Demo user / seed data ─────────────────────────────────────────────────────
+const DEMO_USER = {
+  id:"demo-user",
+  email:"demo@buildbridges.app",
+  name:"Alex Rivera",
+  role:"Product Manager",
+  bio:"Building the future of community communication at Bridges.",
+  color:"#4BA3E3",
+  interests:["Technology","Design","Startups","Community Building"],
+  useCase:"team",
+  settings:{ notifications:true, emailDigest:false },
+};
+
 // ── SCREEN 1: Landing ─────────────────────────────────────────────────────────
-function LandingScreen({ onSignUp, onLogin }) {
+function LandingScreen({ onSignUp, onLogin, onDemo }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { setTimeout(() => setVisible(true), 80); }, []);
   return (
@@ -146,6 +159,7 @@ function LandingScreen({ onSignUp, onLogin }) {
         </div>
         <div style={{ display:"flex", gap:10, alignItems:"center" }}>
           <button onClick={onLogin} style={{ background:"none", border:"none", fontFamily:F, fontWeight:600, fontSize:14, color:C.textSecondary, cursor:"pointer", padding:"8px 16px" }}>Sign in</button>
+          <Btn onClick={onDemo} small variant="ghost">Try Demo</Btn>
           <Btn onClick={onSignUp} small>Get Started Free →</Btn>
         </div>
       </nav>
@@ -156,6 +170,7 @@ function LandingScreen({ onSignUp, onLogin }) {
         <p style={{ fontFamily:F, fontSize:16, color:C.textMuted, margin:"0 0 48px", maxWidth:500, marginLeft:"auto", marginRight:"auto", lineHeight:1.75 }}>The communication platform that brings teams, families, and communities together — with real-time messaging, group collaboration, and crystal-clear video calls.</p>
         <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
           <Btn onClick={onSignUp}>Create Free Account →</Btn>
+          <Btn onClick={onDemo} variant="ghost" icon="▶">Try Demo — No sign-up needed</Btn>
           <Btn onClick={onLogin} variant="outline">Sign in to existing account</Btn>
         </div>
         <p style={{ fontFamily:F, fontSize:12, color:C.textMuted, marginTop:18 }}>No credit card required · Free to get started · Your data stays yours</p>
@@ -1112,10 +1127,18 @@ const MOCK_USERS = [
   { id:2, name:"Jordan Lee", color:"#F472B6", online:false },
 ];
 
-function MainApp({ user, onSignOut, onUpdateUser }) {
+// appData stats counts to match each screen's own initial state
+const DEMO_SEED = {
+  messages:    [1, 2],           // 2 contacts (MOCK_USERS)
+  communities: [1, 2],           // 2 communities (Founders Circle + Design Lab)
+  projects:    [1],              // 1 project (Bridges App)
+  events:      [],
+};
+
+function MainApp({ user, onSignOut, onUpdateUser, isDemo }) {
   const [tab, setTab] = useState("dashboard");
   const [selectedChatId, setSelectedChatId] = useState(null);
-  const [appData, setAppData] = useState({ messages:[], communities:[], projects:[], events:[] });
+  const [appData, setAppData] = useState(isDemo ? DEMO_SEED : { messages:[], communities:[], projects:[], events:[] });
   const updateData = patch => setAppData(d => ({ ...d, ...patch }));
   const [title, subtitle] = TITLES[tab] || ["Bridges",""];
 
@@ -1125,7 +1148,14 @@ function MainApp({ user, onSignOut, onUpdateUser }) {
   };
 
   return (
-    <div style={{ display:"flex", height:"100vh", overflow:"hidden", fontFamily:F, background:C.pageBg }}>
+    <div style={{ display:"flex", flexDirection:"column", height:"100vh", overflow:"hidden", fontFamily:F, background:C.pageBg }}>
+      {isDemo && (
+        <div style={{ background:`linear-gradient(90deg,${C.accent},${C.accentDark})`, color:"#fff", textAlign:"center", padding:"8px 16px", fontFamily:F, fontSize:13, fontWeight:600, letterSpacing:0.2, flexShrink:0 }}>
+          ▶ Demo Mode — All data is local and resets on refresh. &nbsp;
+          <button onClick={onSignOut} style={{ background:"rgba(255,255,255,0.25)", border:"none", borderRadius:999, color:"#fff", fontFamily:F, fontWeight:700, fontSize:12, padding:"3px 12px", cursor:"pointer" }}>Exit Demo</button>
+        </div>
+      )}
+      <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
       <Sidebar active={tab} onNav={setTab} onSignOut={onSignOut} user={user} />
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
         <TopBar
@@ -1142,6 +1172,7 @@ function MainApp({ user, onSignOut, onUpdateUser }) {
           {tab==="profile"   && <ProfileScreen user={user} onUpdate={onUpdateUser} />}
           {tab==="settings"  && <SettingsScreen user={user} onSignOut={onSignOut} onUpdate={onUpdateUser} />}
         </div>
+      </div>
       </div>
     </div>
   );
@@ -1201,21 +1232,30 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  const [isDemo, setIsDemo] = useState(false);
+
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    if (!isDemo) await supabase.auth.signOut();
     setUser(null);
+    setIsDemo(false);
     setScreen("landing");
+  };
+
+  const handleDemo = () => {
+    setUser(DEMO_USER);
+    setIsDemo(true);
+    setScreen("app");
   };
 
   return (
     <>
       {screen==="loading"    && <LoadingScreen />}
-      {screen==="landing"    && <LandingScreen onSignUp={() => setScreen("signup")} onLogin={() => setScreen("login")} />}
+      {screen==="landing"    && <LandingScreen onSignUp={() => setScreen("signup")} onLogin={() => setScreen("login")} onDemo={handleDemo} />}
       {screen==="signup"     && <SignUpScreen onSignUp={d => { setUser(d); setScreen("onboarding"); }} onGoLogin={() => setScreen("login")} />}
       {screen==="login"      && <LoginScreen onLogin={u => { setUser(u); setScreen("app"); }} onGoSignUp={() => setScreen("signup")} />}
       {screen==="onboarding" && <OnboardingScreen user={user} onComplete={p => { setUser(u => ({ ...u, ...p })); setScreen("tour"); }} />}
       {screen==="tour"       && <FeatureTour user={user} onFinish={() => setScreen("app")} />}
-      {screen==="app"        && <MainApp user={user} onSignOut={handleSignOut} onUpdateUser={u => setUser(p => ({ ...p, ...u }))} />}
+      {screen==="app"        && <MainApp user={user} onSignOut={handleSignOut} onUpdateUser={u => setUser(p => ({ ...p, ...u }))} isDemo={isDemo} />}
     </>
   );
 }
