@@ -201,17 +201,21 @@ function SignUpScreen({ onSignUp, onGoLogin }) {
   const handleSignUp = async () => {
     if (!validate()) return;
     setLoading(true); setAuthError("");
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
-    setLoading(false);
-    if (error) { setAuthError(error.message); return; }
-    onSignUp({ name, email, id: data.user?.id });
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
+      if (error) { setAuthError(error.message); return; }
+      onSignUp({ name, email, id: data.user?.id });
+    } catch { setAuthError("Network error — please check your connection."); }
+    finally { setLoading(false); }
   };
 
   const handleOAuth = async (provider) => {
     setLoading(true); setAuthError("");
-    const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
-    setLoading(false);
-    if (error) setAuthError(error.message);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
+      if (error) setAuthError(error.message);
+    } catch { setAuthError("Network error — please check your connection."); }
+    finally { setLoading(false); }
   };
 
   if (showPolicy) return <PolicyPage type={showPolicy} onBack={() => setShowPolicy(null)} onAccept={() => { setAgreed(true); setShowPolicy(null); }} />;
@@ -293,27 +297,33 @@ function LoginScreen({ onLogin, onGoSignUp }) {
   const handleLogin = async () => {
     if (!validate()) return;
     setLoading(true); setAuthError("");
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) { setAuthError(error.message); return; }
-    const meta = data.user?.user_metadata || {};
-    onLogin({ id:data.user.id, email:data.user.email, name:meta.full_name||meta.name||email.split("@")[0], role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"" });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) { setAuthError(error.message); return; }
+      const meta = data.user?.user_metadata || {};
+      onLogin({ id:data.user.id, email:data.user.email, name:meta.full_name||meta.name||email.split("@")[0], role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"" });
+    } catch { setAuthError("Network error — please check your connection."); }
+    finally { setLoading(false); }
   };
 
   const handleOAuth = async (provider) => {
     setLoading(true); setAuthError("");
-    const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
-    setLoading(false);
-    if (error) setAuthError(error.message);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
+      if (error) setAuthError(error.message);
+    } catch { setAuthError("Network error — please check your connection."); }
+    finally { setLoading(false); }
   };
 
   const handleForgotPassword = async () => {
     if (!email.includes("@")) { setErrors({ email:"Enter your email first" }); return; }
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo:`${window.location.origin}?reset=true` });
-    setLoading(false);
-    if (error) { setAuthError(error.message); return; }
-    setResetSent(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo:`${window.location.origin}?reset=true` });
+      if (error) { setAuthError(error.message); return; }
+      setResetSent(true);
+    } catch { setAuthError("Network error — please check your connection."); }
+    finally { setLoading(false); }
   };
 
   return (
@@ -367,8 +377,9 @@ function OnboardingScreen({ user, onComplete }) {
 
   const handleComplete = async () => {
     setSaving(true);
-    await supabase.auth.updateUser({ data: { full_name:profile.name, role:profile.role, bio:profile.bio, color:profile.color, interests:profile.interests, useCase:profile.useCase, onboarded:true } });
+    const { error } = await supabase.auth.updateUser({ data: { full_name:profile.name, role:profile.role, bio:profile.bio, color:profile.color, interests:profile.interests, useCase:profile.useCase, onboarded:true } });
     setSaving(false);
+    if (error) { alert("Failed to save profile: " + error.message); return; }
     onComplete(profile);
   };
 
@@ -951,13 +962,26 @@ function ProfileScreen({ user, onUpdate }) {
   const [role, setRole] = useState(user?.role||"");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const toastRef = useRef(null);
 
   const handleSave = async () => {
-    setSaving(true);
-    const { error } = await supabase.auth.updateUser({ data: { full_name:name, bio, role } });
-    setSaving(false);
-    if (!error) { onUpdate({ name, bio, role }); setSaved(true); setTimeout(() => setSaved(false), 2500); }
+    setSaving(true); setSaveError("");
+    try {
+      const { error } = await supabase.auth.updateUser({ data: { full_name:name, bio, role } });
+      if (error) { setSaveError(error.message); return; }
+      onUpdate({ name, bio, role });
+      setSaved(true);
+      clearTimeout(toastRef.current);
+      toastRef.current = setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      setSaveError("Network error — please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  useEffect(() => () => clearTimeout(toastRef.current), []);
 
   const initials = (name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
 
@@ -965,6 +989,7 @@ function ProfileScreen({ user, onUpdate }) {
     <div style={{ flex:1, overflowY:"auto", padding:28 }}>
       <div style={{ maxWidth:560 }}>
         {saved && <div style={{ background:"#DCFCE7", border:"1.5px solid #86EFAC", borderRadius:12, padding:"12px 18px", marginBottom:20, fontFamily:F, fontSize:13, color:"#16A34A", fontWeight:600 }}>✓ Profile saved successfully</div>}
+        {saveError && <div style={{ background:"#FEE2E2", border:"1.5px solid #FCA5A5", borderRadius:12, padding:"12px 18px", marginBottom:20, fontFamily:F, fontSize:13, color:"#DC2626" }}>⚠ {saveError}</div>}
         <Card style={{ padding:28, marginBottom:20 }}>
           <div style={{ display:"flex", alignItems:"center", gap:18, marginBottom:28 }}>
             <div style={{ width:72, height:72, borderRadius:"50%", background:user?.color||C.accent, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:26, fontWeight:700 }}>{initials}</div>
@@ -1000,14 +1025,27 @@ function SettingsScreen({ user, onSignOut, onUpdate }) {
   const [darkMode, setDarkMode] = useState(false); // dark mode not yet implemented
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const toastRef = useRef(null);
 
   const saveSettings = async () => {
-    setSaving(true);
+    setSaving(true); setSaveError("");
     const newSettings = { notifications, emailDigest };
-    await supabase.auth.updateUser({ data: { settings: newSettings } });
-    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000);
-    onUpdate?.({ settings: newSettings });
+    try {
+      const { error } = await supabase.auth.updateUser({ data: { settings: newSettings } });
+      if (error) { setSaveError(error.message); return; }
+      onUpdate?.({ settings: newSettings });
+      setSaved(true);
+      clearTimeout(toastRef.current);
+      toastRef.current = setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setSaveError("Network error — please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  useEffect(() => () => clearTimeout(toastRef.current), []);
 
   const Toggle = ({ value, onChange }) => (
     <div onClick={() => onChange(!value)} style={{ width:44, height:26, borderRadius:13, background:value?C.accent:C.border, cursor:"pointer", position:"relative", transition:"background 0.2s", flexShrink:0 }}>
@@ -1019,6 +1057,7 @@ function SettingsScreen({ user, onSignOut, onUpdate }) {
     <div style={{ flex:1, overflowY:"auto", padding:28 }}>
       <div style={{ maxWidth:560 }}>
         {saved && <div style={{ background:"#DCFCE7", border:"1.5px solid #86EFAC", borderRadius:12, padding:"12px 18px", marginBottom:20, fontFamily:F, fontSize:13, color:"#16A34A", fontWeight:600 }}>✓ Settings saved</div>}
+        {saveError && <div style={{ background:"#FEE2E2", border:"1.5px solid #FCA5A5", borderRadius:12, padding:"12px 18px", marginBottom:20, fontFamily:F, fontSize:13, color:"#DC2626" }}>⚠ {saveError}</div>}
         <Card style={{ padding:24, marginBottom:20 }}>
           <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary, marginBottom:18 }}>Notifications</div>
           {[{ label:"Push notifications", sub:"Get notified about messages and activity", value:notifications, onChange:setNotifications },{ label:"Email digest", sub:"Weekly summary of your communities", value:emailDigest, onChange:setEmailDigest }].map(({ label, sub, value, onChange }) => (
@@ -1134,15 +1173,17 @@ export default function App() {
     document.head.appendChild(l);
 
     // Check existing Supabase session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        const meta = session.user.user_metadata || {};
-        setUser({ id:session.user.id, email:session.user.email, name:meta.full_name||meta.name||session.user.email?.split("@")[0]||"User", role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"", settings:meta.settings||{} });
-        setScreen(meta.onboarded ? "app" : "onboarding");
-      } else {
-        setScreen("landing");
-      }
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (session?.user) {
+          const meta = session.user.user_metadata || {};
+          setUser({ id:session.user.id, email:session.user.email, name:meta.full_name||meta.name||session.user.email?.split("@")[0]||"User", role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"", settings:meta.settings||{} });
+          setScreen(meta.onboarded ? "app" : "onboarding");
+        } else {
+          setScreen("landing");
+        }
+      })
+      .catch(() => setScreen("landing"));
 
     // Listen for auth state changes (OAuth redirect, sign out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {

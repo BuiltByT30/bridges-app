@@ -7,6 +7,7 @@ import {
   mockSignOut,
   mockUpdateUser,
 } from './mocks/supabase.js';
+import { mockSignUp, mockSignInWithPassword } from './mocks/supabase.js';
 import App from '../App.jsx';
 
 // Nav button accessible names include the emoji icon, e.g. "⊞Dashboard".
@@ -512,5 +513,107 @@ describe('SettingsScreen', () => {
         })
       );
     });
+  });
+});
+
+// ── Error handling – new paths ────────────────────────────────────────────────
+describe('ProfileScreen – save error handling', () => {
+  async function goToProfile(user) {
+    await screen.findByText('Dashboard');
+    await user.click(screen.getByRole('button', { name: /Profile/ }));
+  }
+
+  it('shows error message when Supabase returns an error on save', async () => {
+    mockUpdateUser.mockResolvedValue({ data: {}, error: { message: 'Update failed' } });
+    const user = renderMainApp({ full_name: 'Jane' });
+    await goToProfile(user);
+    await user.click(screen.getByText('Save Profile'));
+    expect(await screen.findByText('⚠ Update failed')).toBeInTheDocument();
+    expect(screen.queryByText('✓ Profile saved successfully')).not.toBeInTheDocument();
+  });
+
+  it('shows error message on network failure', async () => {
+    mockUpdateUser.mockRejectedValue(new Error('fetch failed'));
+    const user = renderMainApp({ full_name: 'Jane' });
+    await goToProfile(user);
+    await user.click(screen.getByText('Save Profile'));
+    expect(await screen.findByText(/Network error/i)).toBeInTheDocument();
+  });
+});
+
+describe('SettingsScreen – save error handling', () => {
+  async function goToSettings(user) {
+    await screen.findByText('Dashboard');
+    await user.click(screen.getByRole('button', { name: /Settings/ }));
+  }
+
+  it('shows error message when Supabase returns an error on save', async () => {
+    mockUpdateUser.mockResolvedValue({ data: {}, error: { message: 'Settings save failed' } });
+    const user = renderMainApp();
+    await goToSettings(user);
+    await user.click(screen.getByText('Save Settings'));
+    expect(await screen.findByText('⚠ Settings save failed')).toBeInTheDocument();
+    expect(screen.queryByText('✓ Settings saved')).not.toBeInTheDocument();
+  });
+
+  it('shows error message on network failure', async () => {
+    mockUpdateUser.mockRejectedValue(new Error('fetch failed'));
+    const user = renderMainApp();
+    await goToSettings(user);
+    await user.click(screen.getByText('Save Settings'));
+    expect(await screen.findByText(/Network error/i)).toBeInTheDocument();
+  });
+});
+
+describe('App – getSession network failure', () => {
+  it('falls back to landing screen when getSession throws', async () => {
+    mockGetSession.mockRejectedValue(new Error('Network error'));
+    mockOnAuthStateChange.mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    });
+    render(<App />);
+    expect(await screen.findByText(/Connect everyone/i)).toBeInTheDocument();
+  });
+});
+
+describe('SignUpScreen – network error handling', () => {
+  beforeEach(() => {
+    mockGetSession.mockResolvedValue({ data: { session: null } });
+    mockOnAuthStateChange.mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    });
+  });
+
+  it('shows network error when signUp throws', async () => {
+    mockSignUp.mockRejectedValue(new Error('fetch failed'));
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(await screen.findByText(/Get Started Free/i));
+    await user.type(screen.getByPlaceholderText(/Your full name/i), 'Jane');
+    await user.type(screen.getByPlaceholderText(/you@example\.com/i), 'jane@example.com');
+    await user.type(screen.getByPlaceholderText(/Create a strong password/i), 'SecureP1!');
+    await user.click(screen.getByText(/I agree to the/i).closest('div'));
+    await user.click(screen.getByText(/Create Account/i));
+    expect(await screen.findByText(/Network error/i)).toBeInTheDocument();
+  });
+});
+
+describe('LoginScreen – network error handling', () => {
+  beforeEach(() => {
+    mockGetSession.mockResolvedValue({ data: { session: null } });
+    mockOnAuthStateChange.mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    });
+  });
+
+  it('shows network error when signInWithPassword throws', async () => {
+    mockSignInWithPassword.mockRejectedValue(new Error('fetch failed'));
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(await screen.findByRole('button', { name: 'Sign in' }));
+    await user.type(screen.getByPlaceholderText(/you@example\.com/i), 'u@example.com');
+    await user.type(screen.getByPlaceholderText(/Your password/i), 'Pass1234!');
+    await user.click(screen.getByRole('button', { name: /Sign In/i }));
+    expect(await screen.findByText(/Network error/i)).toBeInTheDocument();
   });
 });
