@@ -740,21 +740,25 @@ function TopBar({ title, subtitle, users = [], onUserSelect, notifications = DEM
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 function DashboardScreen({ user, onNav, appData }) {
   const stats = [
-    { label:"Communities", value:appData.communities.length||0, icon:"🌐", color:"#A78BFA" },
-    { label:"Messages", value:appData.messages.length||0, icon:"💬", color:"#34D399" },
-    { label:"Projects", value:appData.projects.length||0, icon:"📁", color:"#FBBF24" },
-    { label:"Events", value:appData.events.length||0, icon:"📅", color:"#FB923C" },
+    { label:"Communities", value:appData.communities.length||0, icon:"🌐", color:"#A78BFA", nav:"community", hint:"View communities" },
+    { label:"Messages",    value:appData.messages.length||0,    icon:"💬", color:"#34D399", nav:"messages",  hint:"Open messages"   },
+    { label:"Projects",    value:appData.projects.length||0,    icon:"📁", color:"#FBBF24", nav:"projects",  hint:"View projects"   },
+    { label:"Events",      value:appData.events.length||0,      icon:"📅", color:"#FB923C", nav:null,        hint:"Coming soon"     },
   ];
   return (
     <div style={{ flex:1, overflowY:"auto", padding:28 }}>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:28 }}>
         {stats.map(s => (
-          <Card key={s.label} style={{ padding:20 }}>
+          <Card key={s.label} onClick={s.nav ? () => onNav(s.nav) : undefined}
+            style={{ padding:20, cursor: s.nav ? "pointer" : "default", position:"relative", overflow:"hidden" }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
               <div style={{ width:40, height:40, borderRadius:12, background:`${s.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>{s.icon}</div>
               <span style={{ fontFamily:F, fontWeight:800, fontSize:28, color:C.textPrimary }}>{s.value}</span>
             </div>
-            <div style={{ fontFamily:F, fontSize:13, color:C.textSecondary, fontWeight:600 }}>{s.label}</div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div style={{ fontFamily:F, fontSize:13, color:C.textSecondary, fontWeight:600 }}>{s.label}</div>
+              <div style={{ fontFamily:F, fontSize:11, color: s.nav ? s.color : C.textMuted, fontWeight:600 }}>{s.hint} {s.nav ? "→" : ""}</div>
+            </div>
           </Card>
         ))}
       </div>
