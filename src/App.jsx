@@ -555,84 +555,183 @@ function Sidebar({ active, onNav, onSignOut, user }) {
   );
 }
 
-function TopBar({ title, subtitle, users = [], onUserSelect }) {
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [showNotifications, setShowNotifications] = useState(false);
-  const searchRef = useRef(null);
-  const notifRef = useRef(null);
+const DEMO_NOTIFICATIONS = [
+  { id:1, icon:"💬", title:"Alex Rivera messaged you", sub:"Hey! How's the Bridges build going?", time:"2m ago",  unread:true },
+  { id:2, icon:"❤️", title:"Jordan Lee liked your post", sub:"Just launched our first beta 🎉",    time:"18m ago", unread:true },
+  { id:3, icon:"🌐", title:"New member joined Founders Circle", sub:"Dana Park joined your community", time:"1h ago",  unread:false },
+  { id:4, icon:"📁", title:"Task completed in Bridges App",     sub:"Wire up Supabase auth — done",  time:"3h ago",  unread:false },
+];
 
-  const results = query.trim()
-    ? users.filter(u => u.name.toLowerCase().includes(query.toLowerCase()))
+function TopBar({ title, subtitle, users = [], onUserSelect, notifications = DEMO_NOTIFICATIONS }) {
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [query, setQuery] = useState("");
+  const [showNotif, setShowNotif] = useState(false);
+  const [notifs, setNotifs] = useState(notifications);
+  const searchRef = useRef(null);
+  const notifRef  = useRef(null);
+  const inputRef  = useRef(null);
+
+  const unreadCount = notifs.filter(n => n.unread).length;
+
+  // Filter: when query empty + focused → show all users; when typing → filter
+  const displayResults = searchFocused
+    ? (query.trim() ? users.filter(u => u.name.toLowerCase().includes(query.toLowerCase())) : users)
     : [];
 
+  // Outside-click: separate listeners so they don't interfere
   useEffect(() => {
-    const handler = e => {
+    const handleSearch = e => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setSearchOpen(false); setQuery("");
-      }
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
-        setShowNotifications(false);
+        setSearchFocused(false);
+        setQuery("");
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    const handleNotif = e => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotif(false);
+      }
+    };
+    document.addEventListener("mousedown", handleSearch);
+    document.addEventListener("mousedown", handleNotif);
+    return () => {
+      document.removeEventListener("mousedown", handleSearch);
+      document.removeEventListener("mousedown", handleNotif);
+    };
   }, []);
 
+  // Escape key closes both
+  useEffect(() => {
+    const onKey = e => {
+      if (e.key === "Escape") { setSearchFocused(false); setQuery(""); setShowNotif(false); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  const markAllRead = () => setNotifs(prev => prev.map(n => ({ ...n, unread:false })));
+
   return (
-    <div style={{ background:C.white, borderBottom:`1px solid ${C.border}`, padding:"16px 28px", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
-      <div>
-        <h1 style={{ margin:0, fontFamily:F, fontWeight:800, fontSize:20, color:C.textPrimary, letterSpacing:-0.5 }}>{title}</h1>
+    <div style={{ background:C.white, borderBottom:`1px solid ${C.border}`, padding:"14px 28px", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, gap:16 }}>
+      {/* Left: title */}
+      <div style={{ minWidth:0 }}>
+        <h1 style={{ margin:0, fontFamily:F, fontWeight:800, fontSize:20, color:C.textPrimary, letterSpacing:-0.5, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{title}</h1>
         {subtitle && <p style={{ margin:0, fontFamily:F, fontSize:13, color:C.textSecondary, marginTop:2 }}>{subtitle}</p>}
       </div>
-      <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-        {/* Search */}
+
+      {/* Right: search + bell */}
+      <div style={{ display:"flex", gap:10, alignItems:"center", flexShrink:0 }}>
+
+        {/* ── Search bar ── */}
         <div ref={searchRef} style={{ position:"relative" }}>
-          {searchOpen ? (
+          <div style={{ display:"flex", alignItems:"center", gap:8, background:searchFocused ? C.white : C.pageBg, border:`1.5px solid ${searchFocused ? C.accent : C.border}`, borderRadius:12, padding:"8px 14px", transition:"all 0.2s", width: searchFocused ? 280 : 200 }}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink:0, opacity:0.4 }}>
+              <circle cx="7" cy="7" r="5.5" stroke={C.textPrimary} strokeWidth="1.5"/>
+              <path d="M11 11l3 3" stroke={C.textPrimary} strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
             <input
-              autoFocus
+              ref={inputRef}
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Search users..."
-              style={{ background:C.pageBg, border:`1.5px solid ${C.accent}`, borderRadius:999, padding:"9px 20px", fontFamily:F, fontSize:13, color:C.textPrimary, outline:"none", width:220 }}
+              onFocus={() => setSearchFocused(true)}
+              placeholder="Search people, chats..."
+              style={{ border:"none", outline:"none", background:"transparent", fontFamily:F, fontSize:13, color:C.textPrimary, width:"100%", caretColor:C.accent }}
             />
-          ) : (
-            <div onClick={() => setSearchOpen(true)} style={{ background:C.pageBg, border:`1px solid ${C.border}`, borderRadius:999, padding:"9px 20px", display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
-              <span style={{ fontSize:13 }}>🔍</span>
-              <span style={{ fontFamily:F, fontSize:13, color:C.textMuted }}>Search users...</span>
-            </div>
-          )}
-          {searchOpen && query.trim() && (
-            <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, right:0, background:C.white, border:`1px solid ${C.border}`, borderRadius:14, boxShadow:"0 8px 24px rgba(13,27,42,0.1)", zIndex:200, overflow:"hidden" }}>
-              {results.length > 0 ? results.map(u => (
-                <div key={u.id} onClick={() => { onUserSelect?.(u); setSearchOpen(false); setQuery(""); }}
-                  style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px", cursor:"pointer", fontFamily:F, fontSize:14, color:C.textPrimary }}
+            {query && (
+              <button onClick={() => { setQuery(""); inputRef.current?.focus(); }}
+                style={{ background:"none", border:"none", cursor:"pointer", padding:0, color:C.textMuted, fontSize:14, lineHeight:1, flexShrink:0 }}>✕</button>
+            )}
+          </div>
+
+          {/* Dropdown */}
+          {searchFocused && (
+            <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, width:280, background:C.white, border:`1px solid ${C.border}`, borderRadius:14, boxShadow:"0 12px 32px rgba(13,27,42,0.12)", zIndex:300, overflow:"hidden" }}>
+              <div style={{ padding:"8px 14px 6px", fontFamily:F, fontSize:11, fontWeight:700, color:C.textMuted, letterSpacing:0.6 }}>
+                {query.trim() ? `RESULTS FOR "${query.toUpperCase()}"` : "PEOPLE"}
+              </div>
+              {displayResults.length > 0 ? displayResults.map(u => (
+                <div key={u.id}
+                  onClick={() => { onUserSelect?.(u); setSearchFocused(false); setQuery(""); }}
+                  style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", cursor:"pointer", transition:"background 0.12s" }}
                   onMouseEnter={e => e.currentTarget.style.background = C.hover}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  <div style={{ width:28, height:28, borderRadius:"50%", background:u.color||C.accent, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:11, fontWeight:700 }}>
+                  <div style={{ width:32, height:32, borderRadius:"50%", background:u.color||C.accent, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:11, fontWeight:700, flexShrink:0, position:"relative" }}>
                     {u.name.split(" ").map(w=>w[0]).join("")}
+                    <div style={{ position:"absolute", bottom:0, right:0, width:9, height:9, borderRadius:"50%", background:u.online?C.online:"#CBD5E1", border:"2px solid white" }} />
                   </div>
-                  <div>
-                    <div style={{ fontWeight:600 }}>{u.name}</div>
-                    <div style={{ fontSize:11, color:u.online?C.online:C.textMuted }}>{u.online?"● Online":"○ Offline"}</div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontFamily:F, fontWeight:600, fontSize:13, color:C.textPrimary }}>{u.name}</div>
+                    <div style={{ fontFamily:F, fontSize:11, color:u.online?C.online:C.textMuted }}>{u.online?"● Online now":"○ Offline"}</div>
                   </div>
+                  <div style={{ fontFamily:F, fontSize:11, color:C.textMuted }}>Open chat →</div>
                 </div>
               )) : (
-                <div style={{ padding:"12px 16px", fontFamily:F, fontSize:13, color:C.textMuted }}>No users found for "{query}"</div>
+                <div style={{ padding:"16px 14px", textAlign:"center", fontFamily:F, fontSize:13, color:C.textMuted }}>
+                  {query.trim() ? `No results for "${query}"` : "No people to show"}
+                </div>
+              )}
+              {query.trim() === "" && (
+                <div style={{ padding:"8px 14px 10px", borderTop:`1px solid ${C.borderLight}`, fontFamily:F, fontSize:11, color:C.textMuted }}>
+                  Click a person to open their chat · press Esc to close
+                </div>
               )}
             </div>
           )}
         </div>
-        {/* Notifications */}
+
+        {/* ── Notification bell ── */}
         <div ref={notifRef} style={{ position:"relative" }}>
-          <span onClick={() => setShowNotifications(v => !v)} style={{ fontSize:20, cursor:"pointer" }}>🔔</span>
-          {showNotifications && (
-            <div style={{ position:"absolute", top:"calc(100% + 8px)", right:0, width:280, background:C.white, border:`1px solid ${C.border}`, borderRadius:14, boxShadow:"0 8px 24px rgba(13,27,42,0.1)", zIndex:200, overflow:"hidden" }}>
-              <div style={{ padding:"14px 16px", borderBottom:`1px solid ${C.border}`, fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary }}>Notifications</div>
-              <div style={{ padding:"24px 16px", textAlign:"center", fontFamily:F, fontSize:13, color:C.textMuted }}>🎉 You're all caught up!</div>
+          <button
+            onClick={() => setShowNotif(v => !v)}
+            style={{ position:"relative", width:38, height:38, borderRadius:10, background: showNotif ? C.accentLight : C.pageBg, border:`1.5px solid ${showNotif ? C.accent : C.border}`, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
+            title="Notifications"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke={showNotif ? C.accent : C.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke={showNotif ? C.accent : C.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {unreadCount > 0 && (
+              <span style={{ position:"absolute", top:-4, right:-4, width:16, height:16, borderRadius:"50%", background:C.notification, border:"2px solid white", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:F, fontSize:9, fontWeight:800, color:"white", lineHeight:1 }}>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showNotif && (
+            <div style={{ position:"absolute", top:"calc(100% + 8px)", right:0, width:320, background:C.white, border:`1px solid ${C.border}`, borderRadius:16, boxShadow:"0 16px 40px rgba(13,27,42,0.14)", zIndex:300, overflow:"hidden" }}>
+              {/* Header */}
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 16px", borderBottom:`1px solid ${C.border}` }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary }}>Notifications</span>
+                  {unreadCount > 0 && <span style={{ background:C.notification, color:"white", borderRadius:999, fontFamily:F, fontSize:10, fontWeight:800, padding:"2px 7px" }}>{unreadCount} new</span>}
+                </div>
+                {unreadCount > 0 && (
+                  <button onClick={markAllRead} style={{ background:"none", border:"none", fontFamily:F, fontSize:12, fontWeight:600, color:C.accent, cursor:"pointer", padding:0 }}>Mark all read</button>
+                )}
+              </div>
+              {/* List */}
+              <div style={{ maxHeight:340, overflowY:"auto" }}>
+                {notifs.map(n => (
+                  <div key={n.id} style={{ display:"flex", gap:12, padding:"12px 16px", background:n.unread ? `${C.accent}08` : "transparent", borderBottom:`1px solid ${C.borderLight}`, cursor:"pointer", transition:"background 0.12s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = C.hover}
+                    onMouseLeave={e => e.currentTarget.style.background = n.unread ? `${C.accent}08` : "transparent"}>
+                    <div style={{ width:36, height:36, borderRadius:10, background:C.accentLight, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{n.icon}</div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontFamily:F, fontSize:13, fontWeight: n.unread ? 700 : 500, color:C.textPrimary, marginBottom:2 }}>{n.title}</div>
+                      <div style={{ fontFamily:F, fontSize:12, color:C.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{n.sub}</div>
+                      <div style={{ fontFamily:F, fontSize:11, color:C.textMuted, marginTop:3 }}>{n.time}</div>
+                    </div>
+                    {n.unread && <div style={{ width:8, height:8, borderRadius:"50%", background:C.accent, flexShrink:0, marginTop:4 }} />}
+                  </div>
+                ))}
+              </div>
+              {/* Footer */}
+              <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.border}`, textAlign:"center" }}>
+                <button onClick={() => setShowNotif(false)} style={{ background:"none", border:"none", fontFamily:F, fontSize:12, fontWeight:600, color:C.accent, cursor:"pointer" }}>See all notifications →</button>
+              </div>
             </div>
           )}
         </div>
+
       </div>
     </div>
   );

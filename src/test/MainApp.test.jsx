@@ -95,44 +95,42 @@ describe('Sidebar navigation', () => {
 
 // ── TopBar search ─────────────────────────────────────────────────────────────
 describe('TopBar – user search', () => {
-  it('opens search input when search bar is clicked', async () => {
+  it('shows all users in dropdown when search input is focused', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByText(/Search users/i));
-    expect(screen.getByPlaceholderText('Search users...')).toBeInTheDocument();
+    await user.click(screen.getByPlaceholderText(/Search people/i));
+    expect(await screen.findByText('Alex Rivera')).toBeInTheDocument();
   });
 
   it('shows matching user in dropdown when typing', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByText(/Search users/i));
-    await user.type(screen.getByPlaceholderText('Search users...'), 'Alex');
+    await user.type(screen.getByPlaceholderText(/Search people/i), 'Alex');
     expect(await screen.findByText('Alex Rivera')).toBeInTheDocument();
   });
 
-  it('shows "No users found" for unmatched query', async () => {
+  it('shows "No results" for unmatched query', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByText(/Search users/i));
-    await user.type(screen.getByPlaceholderText('Search users...'), 'ZZZ');
-    expect(await screen.findByText(/No users found/i)).toBeInTheDocument();
+    await user.type(screen.getByPlaceholderText(/Search people/i), 'ZZZ');
+    expect(await screen.findByText(/No results/i)).toBeInTheDocument();
   });
 
   it('navigates to Messages and pre-selects user chat when result is clicked', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByText(/Search users/i));
-    await user.type(screen.getByPlaceholderText('Search users...'), 'Jordan');
-    await user.click(await screen.findByText('Jordan Lee'));
-    // Jordan's message appears in both the preview and the chat bubble
+    await user.type(screen.getByPlaceholderText(/Search people/i), 'Jordan');
+    // Wait for dropdown then click the result
+    const results = await screen.findAllByText('Jordan Lee');
+    await user.click(results[0]);
+    // Jordan's message appears in the chat
     expect((await screen.findAllByText('Can we sync on the community feature?')).length).toBeGreaterThan(0);
   });
 
   it('searches are case-insensitive', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByText(/Search users/i));
-    await user.type(screen.getByPlaceholderText('Search users...'), 'alex');
+    await user.type(screen.getByPlaceholderText(/Search people/i), 'alex');
     expect(await screen.findByText('Alex Rivera')).toBeInTheDocument();
   });
 });
@@ -142,8 +140,25 @@ describe('TopBar – notifications', () => {
   it('opens notifications panel when bell is clicked', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByText('🔔'));
-    expect(await screen.findByText(/You're all caught up/i)).toBeInTheDocument();
+    await user.click(screen.getByTitle('Notifications'));
+    expect(await screen.findByText('Notifications')).toBeInTheDocument();
+  });
+
+  it('shows unread notifications with new badge', async () => {
+    const user = renderMainApp();
+    await screen.findByText('Dashboard');
+    await user.click(screen.getByTitle('Notifications'));
+    // The badge shows e.g. "2 new"
+    expect(await screen.findByText(/\d+ new/i)).toBeInTheDocument();
+  });
+
+  it('"Mark all read" clears the unread badge', async () => {
+    const user = renderMainApp();
+    await screen.findByText('Dashboard');
+    await user.click(screen.getByTitle('Notifications'));
+    await user.click(await screen.findByText('Mark all read'));
+    // badge with "new" text should disappear
+    expect(screen.queryByText(/\d+ new/)).not.toBeInTheDocument();
   });
 });
 
