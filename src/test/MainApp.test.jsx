@@ -140,14 +140,14 @@ describe('TopBar – notifications', () => {
   it('opens notifications panel when bell is clicked', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByTitle('Notifications'));
+    await user.click(screen.getByTitle(/Notifications/i));
     expect(await screen.findByText('Notifications')).toBeInTheDocument();
   });
 
   it('shows unread notifications with new badge', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByTitle('Notifications'));
+    await user.click(screen.getByTitle(/Notifications/i));
     // The badge shows e.g. "2 new"
     expect(await screen.findByText(/\d+ new/i)).toBeInTheDocument();
   });
@@ -155,10 +155,26 @@ describe('TopBar – notifications', () => {
   it('"Mark all read" clears the unread badge', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByTitle('Notifications'));
+    await user.click(screen.getByTitle(/Notifications/i));
     await user.click(await screen.findByText('Mark all read'));
     // badge with "new" text should disappear
     expect(screen.queryByText(/\d+ new/)).not.toBeInTheDocument();
+  });
+
+  it('clicking a message notification navigates to Messages tab', async () => {
+    const user = renderMainApp();
+    await screen.findByText('Dashboard');
+    await user.click(screen.getByTitle(/Notifications/i));
+    await user.click(await screen.findByText('Alex Rivera messaged you'));
+    expect(await screen.findByText('DIRECT MESSAGES')).toBeInTheDocument();
+  });
+
+  it('clicking a community notification navigates to Community tab', async () => {
+    const user = renderMainApp();
+    await screen.findByText('Dashboard');
+    await user.click(screen.getByTitle(/Notifications/i));
+    await user.click(await screen.findByText('Jordan Lee liked your post'));
+    expect(await screen.findByText('New Community')).toBeInTheDocument();
   });
 });
 

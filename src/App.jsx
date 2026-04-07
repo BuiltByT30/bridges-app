@@ -556,13 +556,13 @@ function Sidebar({ active, onNav, onSignOut, user }) {
 }
 
 const DEMO_NOTIFICATIONS = [
-  { id:1, icon:"💬", title:"Alex Rivera messaged you", sub:"Hey! How's the Bridges build going?", time:"2m ago",  unread:true },
-  { id:2, icon:"❤️", title:"Jordan Lee liked your post", sub:"Just launched our first beta 🎉",    time:"18m ago", unread:true },
-  { id:3, icon:"🌐", title:"New member joined Founders Circle", sub:"Dana Park joined your community", time:"1h ago",  unread:false },
-  { id:4, icon:"📁", title:"Task completed in Bridges App",     sub:"Wire up Supabase auth — done",  time:"3h ago",  unread:false },
+  { id:1, icon:"💬", title:"Alex Rivera messaged you",          sub:"Hey! How's the Bridges build going?",   time:"2m ago",  unread:true,  nav:"messages"  },
+  { id:2, icon:"❤️", title:"Jordan Lee liked your post",        sub:"Just launched our first beta 🎉",       time:"18m ago", unread:true,  nav:"community" },
+  { id:3, icon:"🌐", title:"New member joined Founders Circle", sub:"Dana Park joined your community",       time:"1h ago",  unread:false, nav:"community" },
+  { id:4, icon:"📁", title:"Task completed in Bridges App",     sub:"Wire up Supabase auth — done",          time:"3h ago",  unread:false, nav:"projects"  },
 ];
 
-function TopBar({ title, subtitle, users = [], onUserSelect, notifications = DEMO_NOTIFICATIONS }) {
+function TopBar({ title, subtitle, users = [], onUserSelect, onNav, notifications = DEMO_NOTIFICATIONS }) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [query, setQuery] = useState("");
   const [showNotif, setShowNotif] = useState(false);
@@ -683,7 +683,7 @@ function TopBar({ title, subtitle, users = [], onUserSelect, notifications = DEM
           <button
             onClick={() => setShowNotif(v => !v)}
             style={{ position:"relative", width:38, height:38, borderRadius:10, background: showNotif ? C.accentLight : C.pageBg, border:`1.5px solid ${showNotif ? C.accent : C.border}`, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
-            title="Notifications"
+            title="Notifications — click a notification to go there"
           >
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke={showNotif ? C.accent : C.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -710,23 +710,34 @@ function TopBar({ title, subtitle, users = [], onUserSelect, notifications = DEM
               </div>
               {/* List */}
               <div style={{ maxHeight:340, overflowY:"auto" }}>
-                {notifs.map(n => (
-                  <div key={n.id} style={{ display:"flex", gap:12, padding:"12px 16px", background:n.unread ? `${C.accent}08` : "transparent", borderBottom:`1px solid ${C.borderLight}`, cursor:"pointer", transition:"background 0.12s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = C.hover}
-                    onMouseLeave={e => e.currentTarget.style.background = n.unread ? `${C.accent}08` : "transparent"}>
-                    <div style={{ width:36, height:36, borderRadius:10, background:C.accentLight, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{n.icon}</div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontFamily:F, fontSize:13, fontWeight: n.unread ? 700 : 500, color:C.textPrimary, marginBottom:2 }}>{n.title}</div>
-                      <div style={{ fontFamily:F, fontSize:12, color:C.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{n.sub}</div>
-                      <div style={{ fontFamily:F, fontSize:11, color:C.textMuted, marginTop:3 }}>{n.time}</div>
+                {notifs.map(n => {
+                  const navLabel = n.nav === "messages" ? "Go to Messages" : n.nav === "community" ? "Go to Community" : n.nav === "projects" ? "Go to Projects" : null;
+                  return (
+                    <div key={n.id}
+                      onClick={() => {
+                        setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, unread:false } : x));
+                        if (n.nav && onNav) { onNav(n.nav); setShowNotif(false); }
+                      }}
+                      style={{ display:"flex", gap:12, padding:"12px 16px", background:n.unread ? `${C.accent}08` : "transparent", borderBottom:`1px solid ${C.borderLight}`, cursor:"pointer", transition:"background 0.12s" }}
+                      onMouseEnter={e => e.currentTarget.style.background = C.hover}
+                      onMouseLeave={e => e.currentTarget.style.background = n.unread ? `${C.accent}08` : "transparent"}>
+                      <div style={{ width:36, height:36, borderRadius:10, background:C.accentLight, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{n.icon}</div>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontFamily:F, fontSize:13, fontWeight: n.unread ? 700 : 500, color:C.textPrimary, marginBottom:2 }}>{n.title}</div>
+                        <div style={{ fontFamily:F, fontSize:12, color:C.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{n.sub}</div>
+                        <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:3 }}>
+                          <span style={{ fontFamily:F, fontSize:11, color:C.textMuted }}>{n.time}</span>
+                          {navLabel && <span style={{ fontFamily:F, fontSize:11, color:C.accent, fontWeight:600 }}>{navLabel} →</span>}
+                        </div>
+                      </div>
+                      {n.unread && <div style={{ width:8, height:8, borderRadius:"50%", background:C.accent, flexShrink:0, marginTop:4 }} />}
                     </div>
-                    {n.unread && <div style={{ width:8, height:8, borderRadius:"50%", background:C.accent, flexShrink:0, marginTop:4 }} />}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               {/* Footer */}
               <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.border}`, textAlign:"center" }}>
-                <button onClick={() => setShowNotif(false)} style={{ background:"none", border:"none", fontFamily:F, fontSize:12, fontWeight:600, color:C.accent, cursor:"pointer" }}>See all notifications →</button>
+                <button onClick={() => setShowNotif(false)} style={{ background:"none", border:"none", fontFamily:F, fontSize:12, fontWeight:600, color:C.accent, cursor:"pointer" }}>Close</button>
               </div>
             </div>
           )}
@@ -1266,6 +1277,7 @@ function MainApp({ user, onSignOut, onUpdateUser, isDemo }) {
           subtitle={subtitle}
           users={MOCK_USERS}
           onUserSelect={handleUserSelect}
+          onNav={setTab}
         />
         <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
           {tab==="dashboard" && <DashboardScreen user={user} onNav={setTab} appData={appData} />}
