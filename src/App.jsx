@@ -9,15 +9,15 @@ const supabase = createClient(
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg:"#EEF4FB",gradStart:"#EFF6FF",gradEnd:"#DCF0FB",
-  white:"#FFFFFF",card:"#FFFFFF",sidebarBg:"#FAFCFF",
-  accent:"#4BA3E3",accentDark:"#2E86C9",accentLight:"#EAF4FD",
+  pageBg:"#EEF4FB",gradStart:"#E6EFF9",gradEnd:"#D3E5F5",
+  white:"#FFFFFF",card:"#FFFFFF",sidebarBg:"#F2F7FC",
+  accent:"#1A5FAD",accentDark:"#0F3D7A",accentLight:"#E0EAF6",
   textPrimary:"#0D1B2A",textSecondary:"#6B8299",textMuted:"#9BB0C4",
-  border:"#E2EDF7",borderLight:"#EEF4FB",
-  online:"#34C759",notification:"#FF3B30",hover:"#F5FAFF",warning:"#F59E0B",
+  border:"#D8E5F0",borderLight:"#EEF4FB",
+  online:"#34C759",notification:"#FF3B30",hover:"#EEF4FB",warning:"#F59E0B",
 };
 const F = "'Plus Jakarta Sans','DM Sans',sans-serif";
-const COLORS = ["#4BA3E3","#F472B6","#34D399","#FBBF24","#A78BFA","#FB923C","#60A5FA","#F87171"];
+const COLORS = ["#1A5FAD","#F472B6","#34D399","#FBBF24","#A78BFA","#FB923C","#60A5FA","#F87171"];
 const ROLES = ["Product Manager","Designer","Engineer","Marketing","Community Lead","Founder","Student","Other"];
 const INTERESTS = ["Technology","Design","Startups","Community Building","Education","Health & Wellness","Arts & Culture","Finance","Social Impact","Sports"];
 
@@ -34,7 +34,7 @@ function Avatar({ user, size = 36 }) {
 
 function Btn({ children, onClick, variant="primary", small, disabled, fullWidth, icon, loading }) {
   const s = {
-    primary:{ background:C.accent, color:"#fff", border:"none", boxShadow:"0 4px 14px rgba(75,163,227,0.3)" },
+    primary:{ background:C.accent, color:"#fff", border:"none", boxShadow:"0 4px 14px rgba(26,95,173,0.3)" },
     outline:{ background:C.white, color:C.textPrimary, border:`1.5px solid ${C.border}` },
     ghost:{ background:C.accentLight, color:C.accentDark, border:"none" },
     danger:{ background:"#FEE2E2", color:"#DC2626", border:"none" },
@@ -133,45 +133,107 @@ function PolicyPage({ type, onBack, onAccept }) {
   );
 }
 
+// ── Demo user / seed data ─────────────────────────────────────────────────────
+const DEMO_USER = {
+  id:"demo-user",
+  email:"demo@buildbridges.app",
+  name:"Alex Rivera",
+  role:"Product Manager",
+  bio:"Building the future of community communication at Bridges.",
+  color:"#1A5FAD",
+  interests:["Technology","Design","Startups","Community Building"],
+  useCase:"team",
+  settings:{ notifications:true, emailDigest:false },
+};
+
 // ── SCREEN 1: Landing ─────────────────────────────────────────────────────────
-function LandingScreen({ onSignUp, onLogin }) {
+function LandingScreen({ onSignUp, onLogin, onDemo }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { setTimeout(() => setVisible(true), 80); }, []);
+
+  const features = [
+    { icon:"💬", color:"#34D399", title:"Real-time Messaging", desc:"Direct messages and group chats with instant delivery. Your conversations, always in sync." },
+    { icon:"🌐", color:"#A78BFA", title:"Communities", desc:"Create or join communities around any topic. A shared board, live chat, and events all in one place." },
+    { icon:"📁", color:"#FBBF24", title:"Project Collaboration", desc:"Organise work with tasks, progress tracking, and team updates — all connected to your conversations." },
+  ];
+
+  const trust = [
+    { icon:"🔒", label:"End-to-end encrypted" },
+    { icon:"🛡️", label:"GDPR compliant" },
+    { icon:"✅", label:"We never sell your data" },
+    { icon:"🔐", label:"AES-256 at rest" },
+  ];
+
   return (
-    <div style={{ minHeight:"100vh", background:`linear-gradient(160deg,${C.gradStart} 0%,${C.gradEnd} 55%,${C.pageBg} 100%)`, fontFamily:F }}>
-      <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"18px 48px", background:"rgba(255,255,255,0.85)", backdropFilter:"blur(12px)", borderBottom:`1px solid ${C.border}`, position:"sticky", top:0, zIndex:100 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:34, height:34, borderRadius:10, background:`linear-gradient(135deg,${C.accent},${C.accentDark})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>🌉</div>
-          <span style={{ fontFamily:F, fontWeight:800, fontSize:20, color:C.textPrimary, letterSpacing:-0.5 }}>Bridges</span>
+    <div style={{ minHeight:"100vh", background:`linear-gradient(160deg,${C.gradStart} 0%,${C.gradEnd} 60%,${C.pageBg} 100%)`, fontFamily:F }}>
+
+      {/* ── Nav ── */}
+      <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 48px", background:"rgba(255,255,255,0.88)", backdropFilter:"blur(14px)", borderBottom:`1px solid ${C.border}`, position:"sticky", top:0, zIndex:100 }}>
+        <div style={{ display:"flex", alignItems:"center" }}>
+          <img src="/logo.svg" alt="Bridges" style={{ height:32, width:"auto" }} />
         </div>
-        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-          <button onClick={onLogin} style={{ background:"none", border:"none", fontFamily:F, fontWeight:600, fontSize:14, color:C.textSecondary, cursor:"pointer", padding:"8px 16px" }}>Sign in</button>
+        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+          <button onClick={onLogin} style={{ background:"none", border:"none", fontFamily:F, fontWeight:600, fontSize:14, color:C.textSecondary, cursor:"pointer", padding:"8px 16px", borderRadius:8 }}>Sign in</button>
+          <Btn onClick={onDemo} small variant="ghost">▶ Try Demo</Btn>
           <Btn onClick={onSignUp} small>Get Started Free →</Btn>
         </div>
       </nav>
-      <div style={{ textAlign:"center", padding:"90px 48px 70px", opacity:visible?1:0, transform:visible?"translateY(0)":"translateY(28px)", transition:"all 0.65s ease" }}>
-        <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:C.accentLight, color:C.accentDark, borderRadius:999, padding:"6px 16px", fontFamily:F, fontSize:12, fontWeight:700, marginBottom:28, letterSpacing:0.5 }}>🚀 NOW IN BETA</div>
-        <h1 style={{ fontFamily:F, fontWeight:800, fontSize:72, color:C.textPrimary, letterSpacing:-3, margin:"0 0 20px", lineHeight:1.0 }}>Bridges</h1>
-        <p style={{ fontFamily:F, fontSize:22, color:C.textSecondary, margin:"0 0 14px", fontWeight:400 }}>Connect everyone. Seamlessly.</p>
-        <p style={{ fontFamily:F, fontSize:16, color:C.textMuted, margin:"0 0 48px", maxWidth:500, marginLeft:"auto", marginRight:"auto", lineHeight:1.75 }}>The communication platform that brings teams, families, and communities together — with real-time messaging, group collaboration, and crystal-clear video calls.</p>
-        <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
-          <Btn onClick={onSignUp}>Create Free Account →</Btn>
-          <Btn onClick={onLogin} variant="outline">Sign in to existing account</Btn>
+
+      {/* ── Hero ── */}
+      <div style={{ maxWidth:780, margin:"0 auto", textAlign:"center", padding:"80px 32px 64px", opacity:visible?1:0, transform:visible?"translateY(0)":"translateY(24px)", transition:"all 0.6s ease" }}>
+        <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:C.accentLight, color:C.accentDark, borderRadius:999, padding:"5px 14px", fontFamily:F, fontSize:12, fontWeight:700, marginBottom:32, letterSpacing:0.6 }}>🚀 NOW IN BETA</div>
+        {/* Hero logo */}
+        <div style={{ display:"flex", justifyContent:"center", marginBottom:32 }}>
+          <img src="/logo.svg" alt="Bridges" style={{ height:72, width:"auto" }} />
         </div>
-        <p style={{ fontFamily:F, fontSize:12, color:C.textMuted, marginTop:18 }}>No credit card required · Free to get started · Your data stays yours</p>
+        <p style={{ fontFamily:F, fontSize:20, color:C.textSecondary, margin:"0 0 12px", fontWeight:500 }}>The platform that brings people together</p>
+        <p style={{ fontFamily:F, fontSize:16, color:C.textMuted, margin:"0 0 44px", lineHeight:1.75, maxWidth:560, marginLeft:"auto", marginRight:"auto" }}>
+          Messaging, communities, and project collaboration — all in one place. Built for teams, families, and everyone in between.
+        </p>
+        <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap", marginBottom:16 }}>
+          <Btn onClick={onSignUp} icon="✦">Create Free Account</Btn>
+          <Btn onClick={onDemo} variant="ghost" icon="▶">Try Demo — no sign-up needed</Btn>
+        </div>
+        <p style={{ fontFamily:F, fontSize:12, color:C.textMuted }}>No credit card required · Free to get started · Your data stays yours</p>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, padding:"0 48px 80px", maxWidth:1080, margin:"0 auto" }}>
-        {[{ icon:"💬", title:"Real-time Messaging", desc:"Chat with anyone, instantly." },{ icon:"🌐", title:"Communities", desc:"Create and join groups around any topic." },{ icon:"📁", title:"Project Collaboration", desc:"Tasks, progress tracking, and file sharing." },{ icon:"📹", title:"Video Calls", desc:"Crystal-clear video calls in your browser." }].map((f,i) => (
-          <div key={f.title} style={{ background:"rgba(255,255,255,0.72)", borderRadius:20, padding:24, border:`1px solid ${C.border}`, backdropFilter:"blur(8px)", opacity:visible?1:0, transform:visible?"translateY(0)":"translateY(18px)", transition:`all 0.5s ease ${0.1+i*0.1}s` }}>
-            <div style={{ fontSize:30, marginBottom:12 }}>{f.icon}</div>
-            <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary, marginBottom:6 }}>{f.title}</div>
-            <div style={{ fontFamily:F, fontSize:13, color:C.textSecondary, lineHeight:1.55 }}>{f.desc}</div>
+
+      {/* ── Trust bar ── */}
+      <div style={{ display:"flex", justifyContent:"center", gap:0, flexWrap:"wrap", padding:"14px 48px", borderTop:`1px solid ${C.border}`, borderBottom:`1px solid ${C.border}`, background:"rgba(255,255,255,0.5)", backdropFilter:"blur(8px)", marginBottom:80 }}>
+        {trust.map((t, i) => (
+          <div key={t.label} style={{ display:"flex", alignItems:"center", gap:7, padding:"6px 24px", borderRight: i < trust.length-1 ? `1px solid ${C.border}` : "none" }}>
+            <span style={{ fontSize:14 }}>{t.icon}</span>
+            <span style={{ fontFamily:F, fontSize:13, fontWeight:600, color:C.textSecondary }}>{t.label}</span>
           </div>
         ))}
       </div>
-      <div style={{ borderTop:`1px solid ${C.border}`, background:"rgba(255,255,255,0.6)", padding:"18px 48px", display:"flex", justifyContent:"center", gap:36, flexWrap:"wrap" }}>
-        {["🔒 End-to-end encrypted","🛡️ GDPR compliant","✅ We never sell your data","🔐 AES-256 at rest"].map(b => <span key={b} style={{ fontFamily:F, fontSize:13, color:C.textSecondary, fontWeight:600 }}>{b}</span>)}
+
+      {/* ── Feature cards ── */}
+      <div style={{ maxWidth:1040, margin:"0 auto", padding:"0 48px 100px" }}>
+        <div style={{ textAlign:"center", marginBottom:48 }}>
+          <h2 style={{ fontFamily:F, fontWeight:800, fontSize:34, color:C.textPrimary, letterSpacing:-1, margin:"0 0 12px" }}>Everything your community needs</h2>
+          <p style={{ fontFamily:F, fontSize:16, color:C.textSecondary, margin:0 }}>Powerful tools, simple enough for everyone.</p>
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24 }}>
+          {features.map((f, i) => (
+            <div key={f.title} style={{ background:"rgba(255,255,255,0.80)", borderRadius:20, padding:"28px 26px", border:`1px solid ${C.border}`, backdropFilter:"blur(10px)", opacity:visible?1:0, transform:visible?"translateY(0)":"translateY(20px)", transition:`all 0.5s ease ${0.1+i*0.1}s`, boxShadow:"0 2px 20px rgba(13,27,42,0.04)" }}>
+              <div style={{ width:48, height:48, borderRadius:14, background:`${f.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, marginBottom:16 }}>{f.icon}</div>
+              <div style={{ fontFamily:F, fontWeight:700, fontSize:17, color:C.textPrimary, marginBottom:8, letterSpacing:-0.3 }}>{f.title}</div>
+              <div style={{ fontFamily:F, fontSize:14, color:C.textSecondary, lineHeight:1.65 }}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* ── Bottom CTA ── */}
+      <div style={{ background:`linear-gradient(135deg,${C.accent},${C.accentDark})`, padding:"60px 48px", textAlign:"center" }}>
+        <h2 style={{ fontFamily:F, fontWeight:800, fontSize:32, color:"#fff", letterSpacing:-1, margin:"0 0 12px" }}>Ready to build your community?</h2>
+        <p style={{ fontFamily:F, fontSize:16, color:"rgba(255,255,255,0.8)", margin:"0 0 32px" }}>Join Bridges for free — no credit card, no limits to start.</p>
+        <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+          <button onClick={onSignUp} style={{ background:"#fff", border:"none", borderRadius:999, padding:"14px 32px", fontFamily:F, fontWeight:700, fontSize:15, color:C.accentDark, cursor:"pointer" }}>Create Free Account →</button>
+          <button onClick={onLogin} style={{ background:"rgba(255,255,255,0.15)", border:"2px solid rgba(255,255,255,0.4)", borderRadius:999, padding:"14px 32px", fontFamily:F, fontWeight:700, fontSize:15, color:"#fff", cursor:"pointer" }}>Sign In</button>
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -201,17 +263,21 @@ function SignUpScreen({ onSignUp, onGoLogin }) {
   const handleSignUp = async () => {
     if (!validate()) return;
     setLoading(true); setAuthError("");
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
-    setLoading(false);
-    if (error) { setAuthError(error.message); return; }
-    onSignUp({ name, email, id: data.user?.id });
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
+      if (error) { setAuthError(error.message); return; }
+      onSignUp({ name, email, id: data.user?.id });
+    } catch { setAuthError("Network error — please check your connection."); }
+    finally { setLoading(false); }
   };
 
   const handleOAuth = async (provider) => {
     setLoading(true); setAuthError("");
-    const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
-    setLoading(false);
-    if (error) setAuthError(error.message);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
+      if (error) setAuthError(error.message);
+    } catch { setAuthError("Network error — please check your connection."); }
+    finally { setLoading(false); }
   };
 
   if (showPolicy) return <PolicyPage type={showPolicy} onBack={() => setShowPolicy(null)} onAccept={() => { setAgreed(true); setShowPolicy(null); }} />;
@@ -219,9 +285,9 @@ function SignUpScreen({ onSignUp, onGoLogin }) {
   return (
     <div style={{ minHeight:"100vh", display:"flex", fontFamily:F, background:C.pageBg }}>
       <div style={{ width:"44%", background:`linear-gradient(155deg,${C.gradStart},${C.gradEnd})`, display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", padding:"60px 48px", borderRight:`1px solid ${C.border}`, position:"relative", overflow:"hidden" }}>
-        <div style={{ position:"absolute", top:-100, right:-100, width:400, height:400, borderRadius:"50%", background:"rgba(75,163,227,0.07)" }} />
+        <div style={{ position:"absolute", top:-100, right:-100, width:400, height:400, borderRadius:"50%", background:"rgba(26,95,173,0.07)" }} />
         <div style={{ position:"relative", textAlign:"center", maxWidth:340 }}>
-          <div style={{ fontFamily:F, fontWeight:800, fontSize:44, color:C.textPrimary, marginBottom:10, letterSpacing:-2 }}>Bridges</div>
+          <img src="/logo.svg" alt="Bridges" style={{ height:44, width:"auto", marginBottom:10 }} />
           <p style={{ fontFamily:F, fontSize:16, color:C.textSecondary, margin:"0 0 40px", lineHeight:1.65 }}>Join thousands of people building real connections.</p>
           <div style={{ background:"rgba(255,255,255,0.82)", borderRadius:16, padding:22, border:`1px solid ${C.border}`, textAlign:"left" }}>
             <div style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary, marginBottom:14 }}>🔒 Your data is always safe</div>
@@ -263,11 +329,19 @@ function SignUpScreen({ onSignUp, onGoLogin }) {
           </div>
           <div style={{ marginBottom:18 }}><Btn onClick={handleSignUp} fullWidth loading={loading}>Create Account →</Btn></div>
           <p style={{ textAlign:"center", fontFamily:F, fontSize:14, color:C.textSecondary }}>Already have an account? <span onClick={onGoLogin} style={{ color:C.accent, fontWeight:700, cursor:"pointer" }}>Sign in</span></p>
-          <div style={{ margin:"20px 0", display:"flex", alignItems:"center", gap:12 }}><div style={{ flex:1, height:1, background:C.border }} /><span style={{ fontSize:12, color:C.textMuted, fontFamily:F }}>or</span><div style={{ flex:1, height:1, background:C.border }} /></div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-            <button onClick={() => handleOAuth("google")} disabled={loading} style={{ border:`1.5px solid ${C.border}`, borderRadius:999, padding:"12px", background:C.white, fontFamily:F, fontWeight:600, fontSize:14, color:C.textPrimary, cursor:"pointer" }}>🔵  Google</button>
-            <button onClick={() => handleOAuth("apple")} disabled={loading} style={{ border:`1.5px solid ${C.border}`, borderRadius:999, padding:"12px", background:C.white, fontFamily:F, fontWeight:600, fontSize:14, color:C.textPrimary, cursor:"pointer" }}>⚫  Apple</button>
-          </div>
+          <div style={{ margin:"20px 0", display:"flex", alignItems:"center", gap:12 }}><div style={{ flex:1, height:1, background:C.border }} /><span style={{ fontSize:12, color:C.textMuted, fontFamily:F }}>or continue with</span><div style={{ flex:1, height:1, background:C.border }} /></div>
+          <button onClick={() => handleOAuth("google")} disabled={loading}
+            style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:10, border:`1.5px solid ${C.border}`, borderRadius:12, padding:"13px 20px", background:C.white, fontFamily:F, fontWeight:600, fontSize:14, color:C.textPrimary, cursor:loading?"not-allowed":"pointer", opacity:loading?0.6:1, transition:"all 0.15s", boxSizing:"border-box" }}
+            onMouseEnter={e => { if (!loading) e.currentTarget.style.borderColor = "#4285F4"; e.currentTarget.style.background = "#F8FBFF"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.white; }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink:0 }}>
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Continue with Google
+          </button>
         </div>
       </div>
     </div>
@@ -293,35 +367,41 @@ function LoginScreen({ onLogin, onGoSignUp }) {
   const handleLogin = async () => {
     if (!validate()) return;
     setLoading(true); setAuthError("");
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) { setAuthError(error.message); return; }
-    const meta = data.user?.user_metadata || {};
-    onLogin({ id:data.user.id, email:data.user.email, name:meta.full_name||meta.name||email.split("@")[0], role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"" });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) { setAuthError(error.message); return; }
+      const meta = data.user?.user_metadata || {};
+      onLogin({ id:data.user.id, email:data.user.email, name:meta.full_name||meta.name||email.split("@")[0], role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"" });
+    } catch { setAuthError("Network error — please check your connection."); }
+    finally { setLoading(false); }
   };
 
   const handleOAuth = async (provider) => {
     setLoading(true); setAuthError("");
-    const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
-    setLoading(false);
-    if (error) setAuthError(error.message);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
+      if (error) setAuthError(error.message);
+    } catch { setAuthError("Network error — please check your connection."); }
+    finally { setLoading(false); }
   };
 
   const handleForgotPassword = async () => {
     if (!email.includes("@")) { setErrors({ email:"Enter your email first" }); return; }
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo:`${window.location.origin}?reset=true` });
-    setLoading(false);
-    if (error) { setAuthError(error.message); return; }
-    setResetSent(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo:`${window.location.origin}?reset=true` });
+      if (error) { setAuthError(error.message); return; }
+      setResetSent(true);
+    } catch { setAuthError("Network error — please check your connection."); }
+    finally { setLoading(false); }
   };
 
   return (
     <div style={{ minHeight:"100vh", display:"flex", fontFamily:F, background:C.pageBg }}>
       <div style={{ width:"44%", background:`linear-gradient(155deg,${C.gradStart},${C.gradEnd})`, display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", padding:"60px 48px", borderRight:`1px solid ${C.border}`, position:"relative", overflow:"hidden" }}>
-        <div style={{ position:"absolute", top:-100, right:-100, width:400, height:400, borderRadius:"50%", background:"rgba(75,163,227,0.07)" }} />
+        <div style={{ position:"absolute", top:-100, right:-100, width:400, height:400, borderRadius:"50%", background:"rgba(26,95,173,0.07)" }} />
         <div style={{ position:"relative", textAlign:"center", maxWidth:340 }}>
-          <div style={{ fontFamily:F, fontWeight:800, fontSize:44, color:C.textPrimary, marginBottom:10, letterSpacing:-2 }}>Bridges</div>
+          <img src="/logo.svg" alt="Bridges" style={{ height:44, width:"auto", marginBottom:10 }} />
           <p style={{ fontFamily:F, fontSize:16, color:C.textSecondary, margin:"0 0 40px", lineHeight:1.65 }}>Your communities and connections are waiting for you.</p>
           <div style={{ background:"rgba(255,255,255,0.82)", borderRadius:12, padding:"16px 20px", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", gap:12 }}>
             <span style={{ fontSize:24 }}>🔒</span>
@@ -345,11 +425,19 @@ function LoginScreen({ onLogin, onGoSignUp }) {
           </div>
           <div style={{ marginBottom:18 }}><Btn onClick={handleLogin} fullWidth loading={loading}>Sign In →</Btn></div>
           <p style={{ textAlign:"center", fontFamily:F, fontSize:14, color:C.textSecondary }}>No account? <span onClick={onGoSignUp} style={{ color:C.accent, fontWeight:700, cursor:"pointer" }}>Sign up free</span></p>
-          <div style={{ margin:"20px 0", display:"flex", alignItems:"center", gap:12 }}><div style={{ flex:1, height:1, background:C.border }} /><span style={{ fontSize:12, color:C.textMuted, fontFamily:F }}>or</span><div style={{ flex:1, height:1, background:C.border }} /></div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-            <button onClick={() => handleOAuth("google")} disabled={loading} style={{ border:`1.5px solid ${C.border}`, borderRadius:999, padding:"12px", background:C.white, fontFamily:F, fontWeight:600, fontSize:14, color:C.textPrimary, cursor:"pointer" }}>🔵  Google</button>
-            <button onClick={() => handleOAuth("apple")} disabled={loading} style={{ border:`1.5px solid ${C.border}`, borderRadius:999, padding:"12px", background:C.white, fontFamily:F, fontWeight:600, fontSize:14, color:C.textPrimary, cursor:"pointer" }}>⚫  Apple</button>
-          </div>
+          <div style={{ margin:"20px 0", display:"flex", alignItems:"center", gap:12 }}><div style={{ flex:1, height:1, background:C.border }} /><span style={{ fontSize:12, color:C.textMuted, fontFamily:F }}>or continue with</span><div style={{ flex:1, height:1, background:C.border }} /></div>
+          <button onClick={() => handleOAuth("google")} disabled={loading}
+            style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:10, border:`1.5px solid ${C.border}`, borderRadius:12, padding:"13px 20px", background:C.white, fontFamily:F, fontWeight:600, fontSize:14, color:C.textPrimary, cursor:loading?"not-allowed":"pointer", opacity:loading?0.6:1, transition:"all 0.15s", boxSizing:"border-box" }}
+            onMouseEnter={e => { if (!loading) e.currentTarget.style.borderColor = "#4285F4"; e.currentTarget.style.background = "#F8FBFF"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.white; }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink:0 }}>
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Continue with Google
+          </button>
         </div>
       </div>
     </div>
@@ -367,8 +455,9 @@ function OnboardingScreen({ user, onComplete }) {
 
   const handleComplete = async () => {
     setSaving(true);
-    await supabase.auth.updateUser({ data: { full_name:profile.name, role:profile.role, bio:profile.bio, color:profile.color, interests:profile.interests, useCase:profile.useCase, onboarded:true } });
+    const { error } = await supabase.auth.updateUser({ data: { full_name:profile.name, role:profile.role, bio:profile.bio, color:profile.color, interests:profile.interests, useCase:profile.useCase, onboarded:true } });
     setSaving(false);
+    if (error) { alert("Failed to save profile: " + error.message); return; }
     onComplete(profile);
   };
 
@@ -496,15 +585,9 @@ const NAV = [
 function Sidebar({ active, onNav, onSignOut, user }) {
   const initials = (user?.name||"YO").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
   return (
-    <div style={{ width:240, background:C.sidebarBg, borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", flexShrink:0 }}>
-      <div style={{ padding:"22px 20px 18px", borderBottom:`1px solid ${C.border}` }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:36, height:36, borderRadius:10, background:`linear-gradient(135deg,${C.accent},${C.accentDark})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>🌉</div>
-          <div>
-            <div style={{ fontFamily:F, fontWeight:800, fontSize:18, color:C.textPrimary, letterSpacing:-0.5 }}>Bridges</div>
-            <div style={{ fontFamily:F, fontSize:10, color:C.textMuted, fontWeight:600, letterSpacing:0.8 }}>CONNECT · GROW · BUILD</div>
-          </div>
-        </div>
+    <div data-testid="sidebar" style={{ width:240, background:C.sidebarBg, borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", flexShrink:0 }}>
+      <div style={{ padding:"18px 20px 16px", borderBottom:`1px solid ${C.border}` }}>
+        <img src="/logo.svg" alt="Bridges" style={{ height:28, width:"auto" }} />
       </div>
       <div style={{ padding:"12px 10px", flex:1 }}>
         <div style={{ fontFamily:F, fontSize:10, fontWeight:700, color:C.textMuted, letterSpacing:1, padding:"6px 14px 10px", textTransform:"uppercase" }}>Menu</div>
@@ -529,89 +612,396 @@ function Sidebar({ active, onNav, onSignOut, user }) {
   );
 }
 
-function TopBar({ title, subtitle }) {
+const DEMO_NOTIFICATIONS = [
+  { id:1, icon:"💬", title:"Alex Rivera messaged you",          sub:"Hey! How's the Bridges build going?",   time:"2m ago",  unread:true,  nav:"messages"  },
+  { id:2, icon:"❤️", title:"Jordan Lee liked your post",        sub:"Just launched our first beta 🎉",       time:"18m ago", unread:true,  nav:"community" },
+  { id:3, icon:"🌐", title:"New member joined Founders Circle", sub:"Dana Park joined your community",       time:"1h ago",  unread:false, nav:"community" },
+  { id:4, icon:"📁", title:"Task completed in Bridges App",     sub:"Wire up Supabase auth — done",          time:"3h ago",  unread:false, nav:"projects"  },
+];
+
+function TopBar({ title, subtitle, users = [], onUserSelect, onNav, notifications = DEMO_NOTIFICATIONS }) {
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [query, setQuery] = useState("");
+  const [showNotif, setShowNotif] = useState(false);
+  const [notifs, setNotifs] = useState(notifications);
+  const searchRef = useRef(null);
+  const notifRef  = useRef(null);
+  const inputRef  = useRef(null);
+
+  const unreadCount = notifs.filter(n => n.unread).length;
+
+  // Filter: when query empty + focused → show all users; when typing → filter
+  const displayResults = searchFocused
+    ? (query.trim() ? users.filter(u => u.name.toLowerCase().includes(query.toLowerCase())) : users)
+    : [];
+
+  // Outside-click: separate listeners so they don't interfere
+  useEffect(() => {
+    const handleSearch = e => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchFocused(false);
+        setQuery("");
+      }
+    };
+    const handleNotif = e => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotif(false);
+      }
+    };
+    document.addEventListener("mousedown", handleSearch);
+    document.addEventListener("mousedown", handleNotif);
+    return () => {
+      document.removeEventListener("mousedown", handleSearch);
+      document.removeEventListener("mousedown", handleNotif);
+    };
+  }, []);
+
+  // Escape key closes both
+  useEffect(() => {
+    const onKey = e => {
+      if (e.key === "Escape") { setSearchFocused(false); setQuery(""); setShowNotif(false); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  const markAllRead = () => setNotifs(prev => prev.map(n => ({ ...n, unread:false })));
+
   return (
-    <div style={{ background:C.white, borderBottom:`1px solid ${C.border}`, padding:"16px 28px", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
-      <div>
-        <h1 style={{ margin:0, fontFamily:F, fontWeight:800, fontSize:20, color:C.textPrimary, letterSpacing:-0.5 }}>{title}</h1>
+    <div style={{ background:C.white, borderBottom:`1px solid ${C.border}`, padding:"14px 28px", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, gap:16 }}>
+      {/* Left: title */}
+      <div style={{ minWidth:0 }}>
+        <h1 style={{ margin:0, fontFamily:F, fontWeight:800, fontSize:20, color:C.textPrimary, letterSpacing:-0.5, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{title}</h1>
         {subtitle && <p style={{ margin:0, fontFamily:F, fontSize:13, color:C.textSecondary, marginTop:2 }}>{subtitle}</p>}
       </div>
-      <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-        <div style={{ background:C.pageBg, border:`1px solid ${C.border}`, borderRadius:999, padding:"9px 20px", display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
-          <span style={{ fontSize:13 }}>🔍</span>
-          <span style={{ fontFamily:F, fontSize:13, color:C.textMuted }}>Search Bridges...</span>
+
+      {/* Right: search + bell */}
+      <div style={{ display:"flex", gap:10, alignItems:"center", flexShrink:0 }}>
+
+        {/* ── Search bar ── */}
+        <div ref={searchRef} style={{ position:"relative" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, background:searchFocused ? C.white : C.pageBg, border:`1.5px solid ${searchFocused ? C.accent : C.border}`, borderRadius:12, padding:"8px 14px", transition:"all 0.2s", width: searchFocused ? 280 : 200 }}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink:0, opacity:0.4 }}>
+              <circle cx="7" cy="7" r="5.5" stroke={C.textPrimary} strokeWidth="1.5"/>
+              <path d="M11 11l3 3" stroke={C.textPrimary} strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              placeholder="Search people, chats..."
+              style={{ border:"none", outline:"none", background:"transparent", fontFamily:F, fontSize:13, color:C.textPrimary, width:"100%", caretColor:C.accent }}
+            />
+            {query && (
+              <button onClick={() => { setQuery(""); inputRef.current?.focus(); }}
+                style={{ background:"none", border:"none", cursor:"pointer", padding:0, color:C.textMuted, fontSize:14, lineHeight:1, flexShrink:0 }}>✕</button>
+            )}
+          </div>
+
+          {/* Dropdown */}
+          {searchFocused && (
+            <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, width:280, background:C.white, border:`1px solid ${C.border}`, borderRadius:14, boxShadow:"0 12px 32px rgba(13,27,42,0.12)", zIndex:300, overflow:"hidden" }}>
+              <div style={{ padding:"8px 14px 6px", fontFamily:F, fontSize:11, fontWeight:700, color:C.textMuted, letterSpacing:0.6 }}>
+                {query.trim() ? `RESULTS FOR "${query.toUpperCase()}"` : "PEOPLE"}
+              </div>
+              {displayResults.length > 0 ? displayResults.map(u => (
+                <div key={u.id}
+                  onClick={() => { onUserSelect?.(u); setSearchFocused(false); setQuery(""); }}
+                  style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", cursor:"pointer", transition:"background 0.12s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.hover}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <div style={{ width:32, height:32, borderRadius:"50%", background:u.color||C.accent, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:11, fontWeight:700, flexShrink:0, position:"relative" }}>
+                    {u.name.split(" ").map(w=>w[0]).join("")}
+                    <div style={{ position:"absolute", bottom:0, right:0, width:9, height:9, borderRadius:"50%", background:u.online?C.online:"#CBD5E1", border:"2px solid white" }} />
+                  </div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontFamily:F, fontWeight:600, fontSize:13, color:C.textPrimary }}>{u.name}</div>
+                    <div style={{ fontFamily:F, fontSize:11, color:u.online?C.online:C.textMuted }}>{u.online?"● Online now":"○ Offline"}</div>
+                  </div>
+                  <div style={{ fontFamily:F, fontSize:11, color:C.textMuted }}>Open chat →</div>
+                </div>
+              )) : (
+                <div style={{ padding:"16px 14px", textAlign:"center", fontFamily:F, fontSize:13, color:C.textMuted }}>
+                  {query.trim() ? `No results for "${query}"` : "No people to show"}
+                </div>
+              )}
+              {query.trim() === "" && (
+                <div style={{ padding:"8px 14px 10px", borderTop:`1px solid ${C.borderLight}`, fontFamily:F, fontSize:11, color:C.textMuted }}>
+                  Click a person to open their chat · press Esc to close
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <span style={{ fontSize:20, cursor:"pointer" }}>🔔</span>
+
+        {/* ── Notification bell ── */}
+        <div ref={notifRef} style={{ position:"relative" }}>
+          <button
+            onClick={() => setShowNotif(v => !v)}
+            style={{ position:"relative", width:38, height:38, borderRadius:10, background: showNotif ? C.accentLight : C.pageBg, border:`1.5px solid ${showNotif ? C.accent : C.border}`, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
+            title="Notifications — click a notification to go there"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke={showNotif ? C.accent : C.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke={showNotif ? C.accent : C.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {unreadCount > 0 && (
+              <span style={{ position:"absolute", top:-4, right:-4, width:16, height:16, borderRadius:"50%", background:C.notification, border:"2px solid white", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:F, fontSize:9, fontWeight:800, color:"white", lineHeight:1 }}>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showNotif && (
+            <div style={{ position:"absolute", top:"calc(100% + 8px)", right:0, width:320, background:C.white, border:`1px solid ${C.border}`, borderRadius:16, boxShadow:"0 16px 40px rgba(13,27,42,0.14)", zIndex:300, overflow:"hidden" }}>
+              {/* Header */}
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 16px", borderBottom:`1px solid ${C.border}` }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary }}>Notifications</span>
+                  {unreadCount > 0 && <span style={{ background:C.notification, color:"white", borderRadius:999, fontFamily:F, fontSize:10, fontWeight:800, padding:"2px 7px" }}>{unreadCount} new</span>}
+                </div>
+                {unreadCount > 0 && (
+                  <button onClick={markAllRead} style={{ background:"none", border:"none", fontFamily:F, fontSize:12, fontWeight:600, color:C.accent, cursor:"pointer", padding:0 }}>Mark all read</button>
+                )}
+              </div>
+              {/* List */}
+              <div style={{ maxHeight:340, overflowY:"auto" }}>
+                {notifs.map(n => {
+                  const navLabel = n.nav === "messages" ? "Go to Messages" : n.nav === "community" ? "Go to Community" : n.nav === "projects" ? "Go to Projects" : null;
+                  return (
+                    <button
+                      key={n.id}
+                      type="button"
+                      onClick={() => {
+                        setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, unread:false } : x));
+                        if (n.nav && onNav) { onNav(n.nav); setShowNotif(false); }
+                      }}
+                      style={{ width:"100%", display:"flex", gap:12, padding:"12px 16px", background:n.unread ? `${C.accent}08` : "transparent", borderBottom:`1px solid ${C.borderLight}`, cursor:"pointer", border:"none", borderBottomWidth:1, borderBottomStyle:"solid", borderBottomColor:C.borderLight, textAlign:"left", transition:"background 0.12s" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = C.hover; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = n.unread ? `${C.accent}08` : "transparent"; }}
+                    >
+                      <div style={{ width:36, height:36, borderRadius:10, background:C.accentLight, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{n.icon}</div>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontFamily:F, fontSize:13, fontWeight: n.unread ? 700 : 500, color:C.textPrimary, marginBottom:2 }}>{n.title}</div>
+                        <div style={{ fontFamily:F, fontSize:12, color:C.textSecondary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{n.sub}</div>
+                        <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:3 }}>
+                          <span style={{ fontFamily:F, fontSize:11, color:C.textMuted }}>{n.time}</span>
+                          {navLabel && <span style={{ fontFamily:F, fontSize:11, color:C.accent, fontWeight:600 }}>{navLabel} →</span>}
+                        </div>
+                      </div>
+                      {n.unread && <div style={{ width:8, height:8, borderRadius:"50%", background:C.accent, flexShrink:0, marginTop:4 }} />}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Footer */}
+              <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.border}`, textAlign:"center" }}>
+                <button onClick={() => setShowNotif(false)} style={{ background:"none", border:"none", fontFamily:F, fontSize:12, fontWeight:600, color:C.accent, cursor:"pointer" }}>Close</button>
+              </div>
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
 }
 
+// ── Dashboard feed seed (mirrors data in the other screens) ──────────────────
+const DASHBOARD_FEED = [
+  { id:1,  type:"message",   color:"#34D399", avatar:"AR", source:"Alex Rivera",     body:"Hey! How's the Bridges build going?",                         time:"2m ago",  nav:"messages"  },
+  { id:2,  type:"community", color:"#1A5FAD", avatar:"FC", source:"Founders Circle", body:"Alex R. posted: Just launched our first beta 🎉 Who wants early access?", time:"10m ago", nav:"community" },
+  { id:3,  type:"project",   color:"#FBBF24", avatar:"BA", source:"Bridges App",     body:"Task completed: Wire up Supabase auth ✓",                      time:"45m ago", nav:"projects"  },
+  { id:4,  type:"community", color:"#A78BFA", avatar:"DL", source:"Design Lab",      body:"New member joined · 89 members now",                          time:"1h ago",  nav:"community" },
+  { id:5,  type:"message",   color:"#F472B6", avatar:"JL", source:"Jordan Lee",      body:"Can we sync on the community feature tomorrow?",               time:"2h ago",  nav:"messages"  },
+  { id:6,  type:"project",   color:"#FBBF24", avatar:"BA", source:"Bridges App",     body:"New task added: Build community screen",                       time:"3h ago",  nav:"projects"  },
+  { id:7,  type:"community", color:"#1A5FAD", avatar:"FC", source:"Founders Circle", body:"Jordan Lee liked your post · 12 likes total",                 time:"4h ago",  nav:"community" },
+  { id:8,  type:"message",   color:"#34D399", avatar:"AR", source:"Alex Rivera",     body:"Just pushed the new design files 🎨",                          time:"5h ago",  nav:"messages"  },
+];
+
+const FEED_FILTERS = [
+  { key:"all",       label:"All",         icon:"⊞" },
+  { key:"message",   label:"Messages",    icon:"💬" },
+  { key:"community", label:"Communities", icon:"🌐" },
+  { key:"project",   label:"Projects",    icon:"📁" },
+];
+
+const TYPE_LABELS = { message:"Message", community:"Community", project:"Project" };
+const TYPE_COLORS = { message:"#34D399", community:"#1A5FAD", project:"#FBBF24" };
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 function DashboardScreen({ user, onNav, appData }) {
+  const [filter, setFilter] = useState("all");
+
+  const hasMessages    = appData.messages.length > 0;
+  const hasCommunities = appData.communities.length > 0;
+  const hasProjects    = appData.projects.length > 0;
+
   const stats = [
-    { label:"Communities", value:appData.communities.length||0, icon:"🌐", color:"#A78BFA" },
-    { label:"Messages", value:appData.messages.length||0, icon:"💬", color:"#34D399" },
-    { label:"Projects", value:appData.projects.length||0, icon:"📁", color:"#FBBF24" },
-    { label:"Events", value:appData.events.length||0, icon:"📅", color:"#FB923C" },
+    { label:"Communities", value:appData.communities.length||0, icon:"🌐", color:"#A78BFA", nav:"community",
+      hint: hasCommunities ? "View communities →" : "Join one →" },
+    { label:"Messages",    value:appData.messages.length||0,    icon:"💬", color:"#34D399", nav:"messages",
+      hint: hasMessages    ? "Open messages →"    : "Start chatting →" },
+    { label:"Projects",    value:appData.projects.length||0,    icon:"📁", color:"#FBBF24", nav:"projects",
+      hint: hasProjects    ? "View projects →"    : "Create one →" },
+    { label:"Events",      value:appData.events.length||0,      icon:"📅", color:"#FB923C", nav:null,
+      hint:"Coming soon" },
   ];
+
+  const quickActions = [
+    { icon:"💬", label: hasMessages    ? "Send a message"     : "Start a conversation", nav:"messages"  },
+    { icon:"🌐", label: hasCommunities ? "View communities"   : "Join a community",     nav:"community" },
+    { icon:"📁", label: hasProjects    ? "View projects"      : "Create a project",     nav:"projects"  },
+    { icon:"👤", label:"Edit profile",                                                   nav:"profile"   },
+  ];
+
+  const feed = filter === "all" ? DASHBOARD_FEED : DASHBOARD_FEED.filter(f => f.type === filter);
+
   return (
     <div style={{ flex:1, overflowY:"auto", padding:28 }}>
+
+      {/* ── Stat cards ── */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:28 }}>
         {stats.map(s => (
-          <Card key={s.label} style={{ padding:20 }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-              <div style={{ width:40, height:40, borderRadius:12, background:`${s.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>{s.icon}</div>
-              <span style={{ fontFamily:F, fontWeight:800, fontSize:28, color:C.textPrimary }}>{s.value}</span>
+          <Card key={s.label} onClick={s.nav ? () => onNav(s.nav) : undefined}
+            style={{ padding:20, cursor:s.nav?"pointer":"default" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+              <div style={{ width:42, height:42, borderRadius:12, background:`${s.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>{s.icon}</div>
+              <span style={{ fontFamily:F, fontWeight:800, fontSize:30, color:C.textPrimary }}>{s.value}</span>
             </div>
-            <div style={{ fontFamily:F, fontSize:13, color:C.textSecondary, fontWeight:600 }}>{s.label}</div>
+            <div style={{ fontFamily:F, fontSize:13, fontWeight:700, color:C.textPrimary, marginBottom:4 }}>{s.label}</div>
+            <div style={{ fontFamily:F, fontSize:11, fontWeight:600, color:s.nav?s.color:C.textMuted }}>{s.hint}</div>
           </Card>
         ))}
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
-        <Card style={{ padding:24 }}>
-          <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary, marginBottom:16 }}>Quick Actions</div>
+
+      {/* ── Feed + sidebar ── */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 280px", gap:24 }}>
+
+        {/* Feed */}
+        <div>
+          {/* Filter bar */}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+            <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary }}>Your Bridges Feed</div>
+            <div style={{ display:"flex", gap:6, background:C.white, border:`1px solid ${C.border}`, borderRadius:12, padding:4 }}>
+              {FEED_FILTERS.map(f => (
+                <button key={f.key} onClick={() => setFilter(f.key)}
+                  style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:8, border:"none", background:filter===f.key?C.accent:"transparent", color:filter===f.key?"#fff":C.textSecondary, fontFamily:F, fontWeight:600, fontSize:12, cursor:"pointer", transition:"all 0.15s" }}>
+                  <span style={{ fontSize:12 }}>{f.icon}</span>{f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Feed items */}
           <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {[{ icon:"💬", label:"Send a message", nav:"messages" },{ icon:"🌐", label:"Join a community", nav:"community" },{ icon:"📁", label:"Create a project", nav:"projects" },{ icon:"👤", label:"Complete your profile", nav:"profile" }].map(a => (
-              <button key={a.label} onClick={() => onNav(a.nav)} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", borderRadius:12, border:`1px solid ${C.border}`, background:C.white, cursor:"pointer", fontFamily:F, fontSize:14, color:C.textPrimary, fontWeight:500, textAlign:"left", transition:"background 0.15s" }}
-                onMouseEnter={e=>e.currentTarget.style.background=C.hover}
-                onMouseLeave={e=>e.currentTarget.style.background=C.white}>
-                <span style={{ fontSize:18 }}>{a.icon}</span>{a.label}<span style={{ marginLeft:"auto", color:C.textMuted }}>→</span>
-              </button>
-            ))}
+            {feed.length > 0 ? feed.map((item, idx) => (
+              <Card key={item.id} onClick={() => onNav(item.nav)}
+                style={{ padding:"14px 16px", cursor:"pointer", opacity:1, animation:`fadeIn 0.3s ease ${idx*0.04}s both` }}>
+                <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+                  <div style={{ width:40, height:40, borderRadius:12, background:`${item.color}20`, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:F, fontSize:12, fontWeight:800, color:item.color, flexShrink:0 }}>
+                    {item.avatar}
+                  </div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:5 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <span style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary }}>{item.source}</span>
+                        <span style={{ fontFamily:F, fontSize:10, fontWeight:700, color:"#fff", background:TYPE_COLORS[item.type], borderRadius:999, padding:"2px 8px", letterSpacing:0.3 }}>
+                          {TYPE_LABELS[item.type]}
+                        </span>
+                      </div>
+                      <span style={{ fontFamily:F, fontSize:11, color:C.textMuted, flexShrink:0, marginLeft:8 }}>{item.time}</span>
+                    </div>
+                    <div style={{ fontFamily:F, fontSize:13, color:C.textSecondary, lineHeight:1.55 }}>{item.body}</div>
+                  </div>
+                  <div style={{ color:C.textMuted, fontSize:14, flexShrink:0, marginTop:2 }}>→</div>
+                </div>
+              </Card>
+            )) : (
+              <Card style={{ padding:40 }}>
+                <div style={{ textAlign:"center" }}>
+                  <div style={{ fontSize:36, marginBottom:12, opacity:0.4 }}>
+                    {filter==="message"?"💬":filter==="community"?"🌐":"📁"}
+                  </div>
+                  <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary, marginBottom:6 }}>No {filter} activity yet</div>
+                  <div style={{ fontFamily:F, fontSize:13, color:C.textMuted }}>Activity will appear here as you use Bridges.</div>
+                </div>
+              </Card>
+            )}
           </div>
-        </Card>
-        <Card style={{ padding:24 }}>
-          <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary, marginBottom:16 }}>Your Profile</div>
-          <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
-            <div style={{ width:52, height:52, borderRadius:"50%", background:user?.color||C.accent, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:18, fontWeight:700 }}>
-              {(user?.name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}
+        </div>
+
+        {/* Sidebar */}
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+
+          {/* Profile card */}
+          <Card style={{ padding:20 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+              <div style={{ width:46, height:46, borderRadius:"50%", background:user?.color||C.accent, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:16, fontWeight:800, flexShrink:0 }}>
+                {(user?.name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}
+              </div>
+              <div style={{ minWidth:0 }}>
+                <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user?.name||"Your Name"}</div>
+                <div style={{ fontFamily:F, fontSize:12, color:C.textSecondary }}>{user?.role||"No role set"}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary }}>{user?.name||"Your Name"}</div>
-              <div style={{ fontFamily:F, fontSize:13, color:C.textSecondary }}>{user?.role||"Set your role →"}</div>
-              <div style={{ fontFamily:F, fontSize:12, color:C.textMuted }}>{user?.email||""}</div>
+            {user?.bio && <div style={{ fontFamily:F, fontSize:12, color:C.textSecondary, marginBottom:12, lineHeight:1.6, borderTop:`1px solid ${C.borderLight}`, paddingTop:12 }}>{user.bio}</div>}
+            {user?.interests?.length > 0 && (
+              <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
+                {user.interests.slice(0,4).map(i => (
+                  <span key={i} style={{ background:C.accentLight, color:C.accentDark, borderRadius:999, padding:"3px 9px", fontSize:10, fontWeight:700, fontFamily:F }}>{i}</span>
+                ))}
+              </div>
+            )}
+            <button onClick={() => onNav("profile")}
+              style={{ marginTop:14, width:"100%", padding:"8px", borderRadius:8, border:`1px solid ${C.border}`, background:"transparent", fontFamily:F, fontSize:12, fontWeight:600, color:C.accent, cursor:"pointer" }}>
+              Edit Profile →
+            </button>
+          </Card>
+
+          {/* Quick actions */}
+          <Card style={{ padding:20 }}>
+            <div style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary, marginBottom:12 }}>Quick Actions</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              {quickActions.map(a => (
+                <button key={a.label} onClick={() => onNav(a.nav)}
+                  style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 12px", borderRadius:10, border:`1px solid ${C.border}`, background:C.white, cursor:"pointer", fontFamily:F, fontSize:12, fontWeight:600, color:C.textPrimary, textAlign:"left", transition:"background 0.12s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.hover}
+                  onMouseLeave={e => e.currentTarget.style.background = C.white}>
+                  <span style={{ fontSize:15 }}>{a.icon}</span>
+                  <span style={{ flex:1 }}>{a.label}</span>
+                  <span style={{ color:C.textMuted, fontSize:11 }}>→</span>
+                </button>
+              ))}
             </div>
-          </div>
-          {user?.interests?.length > 0 && (
-            <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-              {user.interests.slice(0,4).map(i => <span key={i} style={{ background:C.accentLight, color:C.accentDark, borderRadius:999, padding:"3px 10px", fontSize:11, fontWeight:600, fontFamily:F }}>{i}</span>)}
-            </div>
-          )}
-        </Card>
+          </Card>
+
+        </div>
       </div>
     </div>
   );
 }
 
 // ── Messages ──────────────────────────────────────────────────────────────────
-function MessagesScreen({ appData, onUpdateData }) {
-  const [selected, setSelected] = useState(null);
+function MessagesScreen({ appData, onUpdateData, initialSelectedId, onClearSelectedId }) {
+  const [selected, setSelected] = useState(initialSelectedId || null);
   const [input, setInput] = useState("");
-  const [chats, setChats] = useState([
-    { id:1, name:"Alex Rivera", color:"#34D399", online:true, messages:[{ id:1, text:"Hey! How's the Bridges build going?", mine:false, time:"10:32 AM" }] },
-    { id:2, name:"Jordan Lee", color:"#F472B6", online:false, messages:[{ id:1, text:"Can we sync on the community feature?", mine:false, time:"Yesterday" }] },
-  ]);
+  const [chats, setChats] = useState(
+    MOCK_USERS.map((u, i) => ({
+      ...u,
+      messages: i === 0
+        ? [{ id:1, text:"Hey! How's the Bridges build going?", mine:false, time:"10:32 AM" }]
+        : [{ id:1, text:"Can we sync on the community feature?", mine:false, time:"Yesterday" }],
+    }))
+  );
+
+  useEffect(() => {
+    if (initialSelectedId) {
+      setSelected(initialSelectedId);
+      onClearSelectedId?.();
+    }
+  }, [initialSelectedId]);
   const active = chats.find(c => c.id === selected);
   const send = () => {
     if (!input.trim() || !selected) return;
@@ -669,7 +1059,7 @@ function MessagesScreen({ appData, onUpdateData }) {
 // ── Community ─────────────────────────────────────────────────────────────────
 function CommunityScreen({ appData, onUpdateData }) {
   const [communities, setCommunities] = useState([
-    { id:1, name:"Founders Circle", desc:"For builders, makers, and early-stage founders.", members:142, color:"#4BA3E3", icon:"🚀" },
+    { id:1, name:"Founders Circle", desc:"For builders, makers, and early-stage founders.", members:142, color:"#1A5FAD", icon:"🚀" },
     { id:2, name:"Design Lab", desc:"Share work, get feedback, discuss design thinking.", members:89, color:"#A78BFA", icon:"🎨" },
   ]);
   const [selected, setSelected] = useState(null);
@@ -683,7 +1073,10 @@ function CommunityScreen({ appData, onUpdateData }) {
 
   const createCommunity = () => {
     if (!newName.trim()) return;
-    setCommunities(p => [...p, { id:Date.now(), name:newName, desc:newDesc, members:1, color:COLORS[Math.floor(Math.random()*COLORS.length)], icon:"🌐" }]);
+    const newItem = { id:Date.now(), name:newName, desc:newDesc, members:1, color:COLORS[Math.floor(Math.random()*COLORS.length)], icon:"🌐" };
+    const updated = [...communities, newItem];
+    setCommunities(updated);
+    onUpdateData?.({ communities: updated });
     setShowNew(false); setNewName(""); setNewDesc("");
   };
   const addPost = () => {
@@ -720,7 +1113,7 @@ function CommunityScreen({ appData, onUpdateData }) {
                     <div style={{ flex:1 }}>
                       <div style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary }}>{p.author} <span style={{ fontWeight:400, color:C.textMuted, fontSize:12 }}>{p.time}</span></div>
                       <p style={{ fontFamily:F, fontSize:14, color:C.textPrimary, margin:"6px 0 12px", lineHeight:1.55 }}>{p.text}</p>
-                      <span style={{ fontFamily:F, fontSize:12, color:C.textMuted }}>❤️ {p.likes}</span>
+                      <span onClick={() => setPosts(prev => prev.map(x => x.id===p.id ? { ...x, likes:x.likes+1 } : x))} style={{ fontFamily:F, fontSize:12, color:C.textMuted, cursor:"pointer" }}>❤️ {p.likes}</span>
                     </div>
                   </div>
                 </Card>
@@ -771,7 +1164,7 @@ function CommunityScreen({ appData, onUpdateData }) {
 // ── Projects ──────────────────────────────────────────────────────────────────
 function ProjectsScreen({ appData, onUpdateData }) {
   const [projects, setProjects] = useState([
-    { id:1, name:"Bridges App", desc:"Building the core platform", progress:65, color:"#4BA3E3", tasks:[{ id:1, text:"Wire up Supabase auth", done:true },{ id:2, text:"Build community screen", done:false }] },
+    { id:1, name:"Bridges App", desc:"Building the core platform", progress:65, color:"#1A5FAD", tasks:[{ id:1, text:"Wire up Supabase auth", done:true },{ id:2, text:"Build community screen", done:false }] },
   ]);
   const [selected, setSelected] = useState(null);
   const [showNew, setShowNew] = useState(false);
@@ -781,7 +1174,10 @@ function ProjectsScreen({ appData, onUpdateData }) {
 
   const createProject = () => {
     if (!newName.trim()) return;
-    setProjects(p => [...p, { id:Date.now(), name:newName, desc:"", progress:0, color:COLORS[Math.floor(Math.random()*COLORS.length)], tasks:[] }]);
+    const newItem = { id:Date.now(), name:newName, desc:"", progress:0, color:COLORS[Math.floor(Math.random()*COLORS.length)], tasks:[] };
+    const updated = [...projects, newItem];
+    setProjects(updated);
+    onUpdateData?.({ projects: updated });
     setShowNew(false); setNewName("");
   };
   const addTask = () => {
@@ -875,13 +1271,26 @@ function ProfileScreen({ user, onUpdate }) {
   const [role, setRole] = useState(user?.role||"");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const toastRef = useRef(null);
 
   const handleSave = async () => {
-    setSaving(true);
-    const { error } = await supabase.auth.updateUser({ data: { full_name:name, bio, role } });
-    setSaving(false);
-    if (!error) { onUpdate({ name, bio, role }); setSaved(true); setTimeout(() => setSaved(false), 2500); }
+    setSaving(true); setSaveError("");
+    try {
+      const { error } = await supabase.auth.updateUser({ data: { full_name:name, bio, role } });
+      if (error) { setSaveError(error.message); return; }
+      onUpdate({ name, bio, role });
+      setSaved(true);
+      clearTimeout(toastRef.current);
+      toastRef.current = setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      setSaveError("Network error — please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  useEffect(() => () => clearTimeout(toastRef.current), []);
 
   const initials = (name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
 
@@ -889,6 +1298,7 @@ function ProfileScreen({ user, onUpdate }) {
     <div style={{ flex:1, overflowY:"auto", padding:28 }}>
       <div style={{ maxWidth:560 }}>
         {saved && <div style={{ background:"#DCFCE7", border:"1.5px solid #86EFAC", borderRadius:12, padding:"12px 18px", marginBottom:20, fontFamily:F, fontSize:13, color:"#16A34A", fontWeight:600 }}>✓ Profile saved successfully</div>}
+        {saveError && <div style={{ background:"#FEE2E2", border:"1.5px solid #FCA5A5", borderRadius:12, padding:"12px 18px", marginBottom:20, fontFamily:F, fontSize:13, color:"#DC2626" }}>⚠ {saveError}</div>}
         <Card style={{ padding:28, marginBottom:20 }}>
           <div style={{ display:"flex", alignItems:"center", gap:18, marginBottom:28 }}>
             <div style={{ width:72, height:72, borderRadius:"50%", background:user?.color||C.accent, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:26, fontWeight:700 }}>{initials}</div>
@@ -916,19 +1326,35 @@ function ProfileScreen({ user, onUpdate }) {
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────
-function SettingsScreen({ onSignOut }) {
+function SettingsScreen({ user, onSignOut, onUpdate }) {
+  const savedSettings = user?.settings || {};
   const [confirmSignOut, setConfirmSignOut] = useState(false);
-  const [notifications, setNotifications] = useState(true);
-  const [emailDigest, setEmailDigest] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [notifications, setNotifications] = useState(savedSettings.notifications ?? true);
+  const [emailDigest, setEmailDigest] = useState(savedSettings.emailDigest ?? false);
+  const [darkMode, setDarkMode] = useState(false); // dark mode not yet implemented
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const toastRef = useRef(null);
 
   const saveSettings = async () => {
-    setSaving(true);
-    await supabase.auth.updateUser({ data: { settings:{ notifications, emailDigest, darkMode } } });
-    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000);
+    setSaving(true); setSaveError("");
+    const newSettings = { notifications, emailDigest };
+    try {
+      const { error } = await supabase.auth.updateUser({ data: { settings: newSettings } });
+      if (error) { setSaveError(error.message); return; }
+      onUpdate?.({ settings: newSettings });
+      setSaved(true);
+      clearTimeout(toastRef.current);
+      toastRef.current = setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setSaveError("Network error — please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  useEffect(() => () => clearTimeout(toastRef.current), []);
 
   const Toggle = ({ value, onChange }) => (
     <div onClick={() => onChange(!value)} style={{ width:44, height:26, borderRadius:13, background:value?C.accent:C.border, cursor:"pointer", position:"relative", transition:"background 0.2s", flexShrink:0 }}>
@@ -940,6 +1366,7 @@ function SettingsScreen({ onSignOut }) {
     <div style={{ flex:1, overflowY:"auto", padding:28 }}>
       <div style={{ maxWidth:560 }}>
         {saved && <div style={{ background:"#DCFCE7", border:"1.5px solid #86EFAC", borderRadius:12, padding:"12px 18px", marginBottom:20, fontFamily:F, fontSize:13, color:"#16A34A", fontWeight:600 }}>✓ Settings saved</div>}
+        {saveError && <div style={{ background:"#FEE2E2", border:"1.5px solid #FCA5A5", borderRadius:12, padding:"12px 18px", marginBottom:20, fontFamily:F, fontSize:13, color:"#DC2626" }}>⚠ {saveError}</div>}
         <Card style={{ padding:24, marginBottom:20 }}>
           <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary, marginBottom:18 }}>Notifications</div>
           {[{ label:"Push notifications", sub:"Get notified about messages and activity", value:notifications, onChange:setNotifications },{ label:"Email digest", sub:"Weekly summary of your communities", value:emailDigest, onChange:setEmailDigest }].map(({ label, sub, value, onChange }) => (
@@ -954,12 +1381,13 @@ function SettingsScreen({ onSignOut }) {
         </Card>
         <Card style={{ padding:24, marginBottom:20 }}>
           <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary, marginBottom:18 }}>Appearance</div>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 0" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 0", opacity:0.5 }}>
             <div>
               <div style={{ fontFamily:F, fontWeight:600, fontSize:14, color:C.textPrimary }}>Dark mode</div>
               <div style={{ fontFamily:F, fontSize:12, color:C.textMuted, marginTop:2 }}>Coming soon</div>
             </div>
-            <Toggle value={darkMode} onChange={setDarkMode} />
+            {/* Disabled — not yet implemented */}
+            <Toggle value={darkMode} onChange={() => {}} />
           </div>
         </Card>
         <div style={{ marginBottom:20 }}><Btn onClick={saveSettings} loading={saving}>Save Settings</Btn></div>
@@ -987,24 +1415,59 @@ const TITLES = {
   profile:["Profile","Manage your account"], settings:["Settings","Customize your experience"],
 };
 
-function MainApp({ user, onSignOut, onUpdateUser }) {
+// Shared user directory — used by both MessagesScreen and TopBar search
+const MOCK_USERS = [
+  { id:1, name:"Alex Rivera", color:"#34D399", online:true },
+  { id:2, name:"Jordan Lee", color:"#F472B6", online:false },
+];
+
+// appData stats counts to match each screen's own initial state
+const DEMO_SEED = {
+  messages:    [1, 2],           // 2 contacts (MOCK_USERS)
+  communities: [1, 2],           // 2 communities (Founders Circle + Design Lab)
+  projects:    [1],              // 1 project (Bridges App)
+  events:      [],
+};
+
+function MainApp({ user, onSignOut, onUpdateUser, isDemo }) {
   const [tab, setTab] = useState("dashboard");
-  const [appData, setAppData] = useState({ messages:[], communities:[], projects:[], events:[] });
+  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [appData, setAppData] = useState(isDemo ? DEMO_SEED : { messages:[], communities:[], projects:[], events:[] });
   const updateData = patch => setAppData(d => ({ ...d, ...patch }));
   const [title, subtitle] = TITLES[tab] || ["Bridges",""];
+
+  const handleUserSelect = (u) => {
+    setSelectedChatId(u.id);
+    setTab("messages");
+  };
+
   return (
-    <div style={{ display:"flex", height:"100vh", overflow:"hidden", fontFamily:F, background:C.pageBg }}>
+    <div style={{ display:"flex", flexDirection:"column", height:"100vh", overflow:"hidden", fontFamily:F, background:C.pageBg }}>
+      {isDemo && (
+        <div style={{ background:`linear-gradient(90deg,${C.accent},${C.accentDark})`, color:"#fff", textAlign:"center", padding:"8px 16px", fontFamily:F, fontSize:13, fontWeight:600, letterSpacing:0.2, flexShrink:0 }}>
+          ▶ Demo Mode — All data is local and resets on refresh. &nbsp;
+          <button onClick={onSignOut} style={{ background:"rgba(255,255,255,0.25)", border:"none", borderRadius:999, color:"#fff", fontFamily:F, fontWeight:700, fontSize:12, padding:"3px 12px", cursor:"pointer" }}>Exit Demo</button>
+        </div>
+      )}
+      <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
       <Sidebar active={tab} onNav={setTab} onSignOut={onSignOut} user={user} />
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        <TopBar title={tab==="dashboard"?`Welcome, ${user?.name?.split(" ")[0]||"there"} 👋`:title} subtitle={subtitle} />
+        <TopBar
+          title={tab==="dashboard"?`Welcome, ${user?.name?.split(" ")[0]||"there"} 👋`:title}
+          subtitle={subtitle}
+          users={MOCK_USERS}
+          onUserSelect={handleUserSelect}
+          onNav={setTab}
+        />
         <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
           {tab==="dashboard" && <DashboardScreen user={user} onNav={setTab} appData={appData} />}
-          {tab==="messages"  && <MessagesScreen appData={appData} onUpdateData={updateData} />}
+          {tab==="messages"  && <MessagesScreen appData={appData} onUpdateData={updateData} initialSelectedId={selectedChatId} onClearSelectedId={() => setSelectedChatId(null)} />}
           {tab==="community" && <CommunityScreen appData={appData} onUpdateData={updateData} />}
           {tab==="projects"  && <ProjectsScreen appData={appData} onUpdateData={updateData} />}
           {tab==="profile"   && <ProfileScreen user={user} onUpdate={onUpdateUser} />}
-          {tab==="settings"  && <SettingsScreen onSignOut={onSignOut} />}
+          {tab==="settings"  && <SettingsScreen user={user} onSignOut={onSignOut} onUpdate={onUpdateUser} />}
         </div>
+      </div>
       </div>
     </div>
   );
@@ -1015,8 +1478,7 @@ function LoadingScreen() {
   return (
     <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:C.pageBg, fontFamily:F }}>
       <div style={{ textAlign:"center" }}>
-        <div style={{ width:52, height:52, borderRadius:14, background:`linear-gradient(135deg,${C.accent},${C.accentDark})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, margin:"0 auto 16px" }}>🌉</div>
-        <div style={{ fontFamily:F, fontWeight:800, fontSize:22, color:C.textPrimary, marginBottom:8 }}>Bridges</div>
+        <img src="/logo.svg" alt="Bridges" style={{ height:40, width:"auto", marginBottom:16 }} />
         <div style={{ fontFamily:F, fontSize:13, color:C.textMuted }}>Loading your workspace...</div>
       </div>
     </div>
@@ -1036,21 +1498,23 @@ export default function App() {
     document.head.appendChild(l);
 
     // Check existing Supabase session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        const meta = session.user.user_metadata || {};
-        setUser({ id:session.user.id, email:session.user.email, name:meta.full_name||meta.name||session.user.email?.split("@")[0]||"User", role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"" });
-        setScreen(meta.onboarded ? "app" : "onboarding");
-      } else {
-        setScreen("landing");
-      }
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (session?.user) {
+          const meta = session.user.user_metadata || {};
+          setUser({ id:session.user.id, email:session.user.email, name:meta.full_name||meta.name||session.user.email?.split("@")[0]||"User", role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"", settings:meta.settings||{} });
+          setScreen(meta.onboarded ? "app" : "onboarding");
+        } else {
+          setScreen("landing");
+        }
+      })
+      .catch(() => setScreen("landing"));
 
     // Listen for auth state changes (OAuth redirect, sign out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         const meta = session.user.user_metadata || {};
-        const u = { id:session.user.id, email:session.user.email, name:meta.full_name||meta.name||session.user.email?.split("@")[0]||"User", role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"" };
+        const u = { id:session.user.id, email:session.user.email, name:meta.full_name||meta.name||session.user.email?.split("@")[0]||"User", role:meta.role||"", bio:meta.bio||"", color:meta.color||COLORS[0], interests:meta.interests||[], useCase:meta.useCase||"", settings:meta.settings||{} };
         setUser(u);
         setScreen(s => s === "loading" ? (meta.onboarded ? "app" : "onboarding") : s);
       } else {
@@ -1062,21 +1526,30 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  const [isDemo, setIsDemo] = useState(false);
+
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    if (!isDemo) await supabase.auth.signOut();
     setUser(null);
+    setIsDemo(false);
     setScreen("landing");
+  };
+
+  const handleDemo = () => {
+    setUser(DEMO_USER);
+    setIsDemo(true);
+    setScreen("app");
   };
 
   return (
     <>
       {screen==="loading"    && <LoadingScreen />}
-      {screen==="landing"    && <LandingScreen onSignUp={() => setScreen("signup")} onLogin={() => setScreen("login")} />}
+      {screen==="landing"    && <LandingScreen onSignUp={() => setScreen("signup")} onLogin={() => setScreen("login")} onDemo={handleDemo} />}
       {screen==="signup"     && <SignUpScreen onSignUp={d => { setUser(d); setScreen("onboarding"); }} onGoLogin={() => setScreen("login")} />}
       {screen==="login"      && <LoginScreen onLogin={u => { setUser(u); setScreen("app"); }} onGoSignUp={() => setScreen("signup")} />}
       {screen==="onboarding" && <OnboardingScreen user={user} onComplete={p => { setUser(u => ({ ...u, ...p })); setScreen("tour"); }} />}
       {screen==="tour"       && <FeatureTour user={user} onFinish={() => setScreen("app")} />}
-      {screen==="app"        && <MainApp user={user} onSignOut={handleSignOut} onUpdateUser={u => setUser(p => ({ ...p, ...u }))} />}
+      {screen==="app"        && <MainApp user={user} onSignOut={handleSignOut} onUpdateUser={u => setUser(p => ({ ...p, ...u }))} isDemo={isDemo} />}
     </>
   );
 }
