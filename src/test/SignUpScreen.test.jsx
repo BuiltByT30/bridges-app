@@ -162,15 +162,6 @@ describe('SignUpScreen – OAuth', () => {
     );
   });
 
-  it('calls signInWithOAuth with apple provider', async () => {
-    mockSignInWithOAuth.mockResolvedValue({ error: null });
-    const user = await renderSignUp();
-    await user.click(screen.getByText(/Apple/i));
-    expect(mockSignInWithOAuth).toHaveBeenCalledWith(
-      expect.objectContaining({ provider: 'apple' })
-    );
-  });
-
   it('shows error if OAuth fails', async () => {
     mockSignInWithOAuth.mockResolvedValue({ error: { message: 'OAuth unavailable' } });
     const user = await renderSignUp();

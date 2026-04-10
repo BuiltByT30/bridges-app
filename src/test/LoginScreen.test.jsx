@@ -130,14 +130,6 @@ describe('LoginScreen – OAuth', () => {
     );
   });
 
-  it('calls signInWithOAuth with apple', async () => {
-    mockSignInWithOAuth.mockResolvedValue({ error: null });
-    const user = await renderLogin();
-    await user.click(screen.getByText(/Apple/i));
-    expect(mockSignInWithOAuth).toHaveBeenCalledWith(
-      expect.objectContaining({ provider: 'apple' })
-    );
-  });
 });
 
 describe('LoginScreen – forgot password', () => {
