@@ -9,15 +9,15 @@ const supabase = createClient(
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg:"#EEF4FB",gradStart:"#EFF6FF",gradEnd:"#DCF0FB",
-  white:"#FFFFFF",card:"#FFFFFF",sidebarBg:"#FAFCFF",
-  accent:"#4BA3E3",accentDark:"#2E86C9",accentLight:"#EAF4FD",
+  pageBg:"#EEF4FB",gradStart:"#E6EFF9",gradEnd:"#D3E5F5",
+  white:"#FFFFFF",card:"#FFFFFF",sidebarBg:"#F2F7FC",
+  accent:"#1A5FAD",accentDark:"#0F3D7A",accentLight:"#E0EAF6",
   textPrimary:"#0D1B2A",textSecondary:"#6B8299",textMuted:"#9BB0C4",
-  border:"#E2EDF7",borderLight:"#EEF4FB",
-  online:"#34C759",notification:"#FF3B30",hover:"#F5FAFF",warning:"#F59E0B",
+  border:"#D8E5F0",borderLight:"#EEF4FB",
+  online:"#34C759",notification:"#FF3B30",hover:"#EEF4FB",warning:"#F59E0B",
 };
 const F = "'Plus Jakarta Sans','DM Sans',sans-serif";
-const COLORS = ["#4BA3E3","#F472B6","#34D399","#FBBF24","#A78BFA","#FB923C","#60A5FA","#F87171"];
+const COLORS = ["#1A5FAD","#F472B6","#34D399","#FBBF24","#A78BFA","#FB923C","#60A5FA","#F87171"];
 const ROLES = ["Product Manager","Designer","Engineer","Marketing","Community Lead","Founder","Student","Other"];
 const INTERESTS = ["Technology","Design","Startups","Community Building","Education","Health & Wellness","Arts & Culture","Finance","Social Impact","Sports"];
 
@@ -34,7 +34,7 @@ function Avatar({ user, size = 36 }) {
 
 function Btn({ children, onClick, variant="primary", small, disabled, fullWidth, icon, loading }) {
   const s = {
-    primary:{ background:C.accent, color:"#fff", border:"none", boxShadow:"0 4px 14px rgba(75,163,227,0.3)" },
+    primary:{ background:C.accent, color:"#fff", border:"none", boxShadow:"0 4px 14px rgba(26,95,173,0.3)" },
     outline:{ background:C.white, color:C.textPrimary, border:`1.5px solid ${C.border}` },
     ghost:{ background:C.accentLight, color:C.accentDark, border:"none" },
     danger:{ background:"#FEE2E2", color:"#DC2626", border:"none" },
@@ -140,7 +140,7 @@ const DEMO_USER = {
   name:"Alex Rivera",
   role:"Product Manager",
   bio:"Building the future of community communication at Bridges.",
-  color:"#4BA3E3",
+  color:"#1A5FAD",
   interests:["Technology","Design","Startups","Community Building"],
   useCase:"team",
   settings:{ notifications:true, emailDigest:false },
@@ -285,7 +285,7 @@ function SignUpScreen({ onSignUp, onGoLogin }) {
   return (
     <div style={{ minHeight:"100vh", display:"flex", fontFamily:F, background:C.pageBg }}>
       <div style={{ width:"44%", background:`linear-gradient(155deg,${C.gradStart},${C.gradEnd})`, display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", padding:"60px 48px", borderRight:`1px solid ${C.border}`, position:"relative", overflow:"hidden" }}>
-        <div style={{ position:"absolute", top:-100, right:-100, width:400, height:400, borderRadius:"50%", background:"rgba(75,163,227,0.07)" }} />
+        <div style={{ position:"absolute", top:-100, right:-100, width:400, height:400, borderRadius:"50%", background:"rgba(26,95,173,0.07)" }} />
         <div style={{ position:"relative", textAlign:"center", maxWidth:340 }}>
           <img src="/logo.svg" alt="Bridges" style={{ height:44, width:"auto", marginBottom:10 }} />
           <p style={{ fontFamily:F, fontSize:16, color:C.textSecondary, margin:"0 0 40px", lineHeight:1.65 }}>Join thousands of people building real connections.</p>
@@ -399,7 +399,7 @@ function LoginScreen({ onLogin, onGoSignUp }) {
   return (
     <div style={{ minHeight:"100vh", display:"flex", fontFamily:F, background:C.pageBg }}>
       <div style={{ width:"44%", background:`linear-gradient(155deg,${C.gradStart},${C.gradEnd})`, display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", padding:"60px 48px", borderRight:`1px solid ${C.border}`, position:"relative", overflow:"hidden" }}>
-        <div style={{ position:"absolute", top:-100, right:-100, width:400, height:400, borderRadius:"50%", background:"rgba(75,163,227,0.07)" }} />
+        <div style={{ position:"absolute", top:-100, right:-100, width:400, height:400, borderRadius:"50%", background:"rgba(26,95,173,0.07)" }} />
         <div style={{ position:"relative", textAlign:"center", maxWidth:340 }}>
           <img src="/logo.svg" alt="Bridges" style={{ height:44, width:"auto", marginBottom:10 }} />
           <p style={{ fontFamily:F, fontSize:16, color:C.textSecondary, margin:"0 0 40px", lineHeight:1.65 }}>Your communities and connections are waiting for you.</p>
@@ -811,12 +811,12 @@ function TopBar({ title, subtitle, users = [], onUserSelect, onNav, notification
 // ── Dashboard feed seed (mirrors data in the other screens) ──────────────────
 const DASHBOARD_FEED = [
   { id:1,  type:"message",   color:"#34D399", avatar:"AR", source:"Alex Rivera",     body:"Hey! How's the Bridges build going?",                         time:"2m ago",  nav:"messages"  },
-  { id:2,  type:"community", color:"#4BA3E3", avatar:"FC", source:"Founders Circle", body:"Alex R. posted: Just launched our first beta 🎉 Who wants early access?", time:"10m ago", nav:"community" },
+  { id:2,  type:"community", color:"#1A5FAD", avatar:"FC", source:"Founders Circle", body:"Alex R. posted: Just launched our first beta 🎉 Who wants early access?", time:"10m ago", nav:"community" },
   { id:3,  type:"project",   color:"#FBBF24", avatar:"BA", source:"Bridges App",     body:"Task completed: Wire up Supabase auth ✓",                      time:"45m ago", nav:"projects"  },
   { id:4,  type:"community", color:"#A78BFA", avatar:"DL", source:"Design Lab",      body:"New member joined · 89 members now",                          time:"1h ago",  nav:"community" },
   { id:5,  type:"message",   color:"#F472B6", avatar:"JL", source:"Jordan Lee",      body:"Can we sync on the community feature tomorrow?",               time:"2h ago",  nav:"messages"  },
   { id:6,  type:"project",   color:"#FBBF24", avatar:"BA", source:"Bridges App",     body:"New task added: Build community screen",                       time:"3h ago",  nav:"projects"  },
-  { id:7,  type:"community", color:"#4BA3E3", avatar:"FC", source:"Founders Circle", body:"Jordan Lee liked your post · 12 likes total",                 time:"4h ago",  nav:"community" },
+  { id:7,  type:"community", color:"#1A5FAD", avatar:"FC", source:"Founders Circle", body:"Jordan Lee liked your post · 12 likes total",                 time:"4h ago",  nav:"community" },
   { id:8,  type:"message",   color:"#34D399", avatar:"AR", source:"Alex Rivera",     body:"Just pushed the new design files 🎨",                          time:"5h ago",  nav:"messages"  },
 ];
 
@@ -828,7 +828,7 @@ const FEED_FILTERS = [
 ];
 
 const TYPE_LABELS = { message:"Message", community:"Community", project:"Project" };
-const TYPE_COLORS = { message:"#34D399", community:"#4BA3E3", project:"#FBBF24" };
+const TYPE_COLORS = { message:"#34D399", community:"#1A5FAD", project:"#FBBF24" };
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 function DashboardScreen({ user, onNav, appData }) {
@@ -1059,7 +1059,7 @@ function MessagesScreen({ appData, onUpdateData, initialSelectedId, onClearSelec
 // ── Community ─────────────────────────────────────────────────────────────────
 function CommunityScreen({ appData, onUpdateData }) {
   const [communities, setCommunities] = useState([
-    { id:1, name:"Founders Circle", desc:"For builders, makers, and early-stage founders.", members:142, color:"#4BA3E3", icon:"🚀" },
+    { id:1, name:"Founders Circle", desc:"For builders, makers, and early-stage founders.", members:142, color:"#1A5FAD", icon:"🚀" },
     { id:2, name:"Design Lab", desc:"Share work, get feedback, discuss design thinking.", members:89, color:"#A78BFA", icon:"🎨" },
   ]);
   const [selected, setSelected] = useState(null);
@@ -1164,7 +1164,7 @@ function CommunityScreen({ appData, onUpdateData }) {
 // ── Projects ──────────────────────────────────────────────────────────────────
 function ProjectsScreen({ appData, onUpdateData }) {
   const [projects, setProjects] = useState([
-    { id:1, name:"Bridges App", desc:"Building the core platform", progress:65, color:"#4BA3E3", tasks:[{ id:1, text:"Wire up Supabase auth", done:true },{ id:2, text:"Build community screen", done:false }] },
+    { id:1, name:"Bridges App", desc:"Building the core platform", progress:65, color:"#1A5FAD", tasks:[{ id:1, text:"Wire up Supabase auth", done:true },{ id:2, text:"Build community screen", done:false }] },
   ]);
   const [selected, setSelected] = useState(null);
   const [showNew, setShowNew] = useState(false);
