@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   mockGetSession,
@@ -11,9 +11,10 @@ import { mockSignUp, mockSignInWithPassword } from './mocks/supabase.js';
 import App from '../App.jsx';
 
 // Nav button accessible names include the emoji icon, e.g. "⊞Dashboard".
-// Use regex partial match so we don't need to know the exact emoji.
+// Scope search to sidebar so dashboard filter buttons don't interfere.
 function navBtn(label) {
-  return screen.getByRole('button', { name: new RegExp(label) });
+  const sidebar = screen.getByTestId('sidebar');
+  return within(sidebar).getByRole('button', { name: new RegExp(label) });
 }
 
 function renderMainApp(userMeta = {}) {
@@ -99,14 +100,16 @@ describe('TopBar – user search', () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
     await user.click(screen.getByPlaceholderText(/Search people/i));
-    expect(await screen.findByText('Alex Rivera')).toBeInTheDocument();
+    // "Alex Rivera" also appears in the feed — check for the online indicator unique to the dropdown
+    expect(await screen.findByText('● Online now')).toBeInTheDocument();
   });
 
   it('shows matching user in dropdown when typing', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
     await user.type(screen.getByPlaceholderText(/Search people/i), 'Alex');
-    expect(await screen.findByText('Alex Rivera')).toBeInTheDocument();
+    // Dropdown shows the online status label — unique to the search dropdown
+    expect(await screen.findByText('● Online now')).toBeInTheDocument();
   });
 
   it('shows "No results" for unmatched query', async () => {
@@ -131,7 +134,7 @@ describe('TopBar – user search', () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
     await user.type(screen.getByPlaceholderText(/Search people/i), 'alex');
-    expect(await screen.findByText('Alex Rivera')).toBeInTheDocument();
+    expect(await screen.findByText('● Online now')).toBeInTheDocument();
   });
 });
 
@@ -183,28 +186,29 @@ describe('Dashboard quick actions', () => {
   it('navigates to Messages via quick action', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByText('Send a message'));
+    // Empty appData → "Start a conversation"; demo mode → "Send a message"
+    await user.click(screen.getByText(/Start a conversation|Send a message/i));
     expect(screen.getByText('DIRECT MESSAGES')).toBeInTheDocument();
   });
 
   it('navigates to Community via quick action', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByText('Join a community'));
+    await user.click(screen.getByText(/Join a community|View communities/i));
     expect(screen.getByText('New Community')).toBeInTheDocument();
   });
 
   it('navigates to Projects via quick action', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByText('Create a project'));
+    await user.click(screen.getByText(/Create a project|View projects/i));
     expect(screen.getByText('New Project')).toBeInTheDocument();
   });
 
   it('navigates to Profile via quick action', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.click(screen.getByText('Complete your profile'));
+    await user.click(screen.getByText('Edit profile'));
     expect(screen.getByText('Save Profile')).toBeInTheDocument();
   });
 });
@@ -551,7 +555,7 @@ describe('SettingsScreen', () => {
 describe('ProfileScreen – save error handling', () => {
   async function goToProfile(user) {
     await screen.findByText('Dashboard');
-    await user.click(screen.getByRole('button', { name: /Profile/ }));
+    await user.click(navBtn('Profile'));
   }
 
   it('shows error message when Supabase returns an error on save', async () => {

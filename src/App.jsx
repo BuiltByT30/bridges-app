@@ -169,9 +169,8 @@ function LandingScreen({ onSignUp, onLogin, onDemo }) {
 
       {/* ── Nav ── */}
       <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 48px", background:"rgba(255,255,255,0.88)", backdropFilter:"blur(14px)", borderBottom:`1px solid ${C.border}`, position:"sticky", top:0, zIndex:100 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:34, height:34, borderRadius:10, background:`linear-gradient(135deg,${C.accent},${C.accentDark})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>🌉</div>
-          <span style={{ fontFamily:F, fontWeight:800, fontSize:20, color:C.textPrimary, letterSpacing:-0.5 }}>Bridges</span>
+        <div style={{ display:"flex", alignItems:"center" }}>
+          <img src="/logo.svg" alt="Bridges" style={{ height:32, width:"auto" }} />
         </div>
         <div style={{ display:"flex", gap:8, alignItems:"center" }}>
           <button onClick={onLogin} style={{ background:"none", border:"none", fontFamily:F, fontWeight:600, fontSize:14, color:C.textSecondary, cursor:"pointer", padding:"8px 16px", borderRadius:8 }}>Sign in</button>
@@ -181,13 +180,14 @@ function LandingScreen({ onSignUp, onLogin, onDemo }) {
       </nav>
 
       {/* ── Hero ── */}
-      <div style={{ maxWidth:780, margin:"0 auto", textAlign:"center", padding:"100px 32px 72px", opacity:visible?1:0, transform:visible?"translateY(0)":"translateY(24px)", transition:"all 0.6s ease" }}>
-        <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:C.accentLight, color:C.accentDark, borderRadius:999, padding:"5px 14px", fontFamily:F, fontSize:12, fontWeight:700, marginBottom:24, letterSpacing:0.6 }}>🚀 NOW IN BETA</div>
-        <h1 style={{ fontFamily:F, fontWeight:800, fontSize:68, color:C.textPrimary, letterSpacing:-3, margin:"0 0 18px", lineHeight:1.0 }}>
-          The platform that<br />
-          <span style={{ color:C.accent }}>brings people together</span>
-        </h1>
-        <p style={{ fontFamily:F, fontSize:18, color:C.textSecondary, margin:"0 0 44px", lineHeight:1.75, maxWidth:560, marginLeft:"auto", marginRight:"auto" }}>
+      <div style={{ maxWidth:780, margin:"0 auto", textAlign:"center", padding:"80px 32px 64px", opacity:visible?1:0, transform:visible?"translateY(0)":"translateY(24px)", transition:"all 0.6s ease" }}>
+        <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:C.accentLight, color:C.accentDark, borderRadius:999, padding:"5px 14px", fontFamily:F, fontSize:12, fontWeight:700, marginBottom:32, letterSpacing:0.6 }}>🚀 NOW IN BETA</div>
+        {/* Hero logo */}
+        <div style={{ display:"flex", justifyContent:"center", marginBottom:32 }}>
+          <img src="/logo.svg" alt="Bridges" style={{ height:72, width:"auto" }} />
+        </div>
+        <p style={{ fontFamily:F, fontSize:20, color:C.textSecondary, margin:"0 0 12px", fontWeight:500 }}>The platform that brings people together</p>
+        <p style={{ fontFamily:F, fontSize:16, color:C.textMuted, margin:"0 0 44px", lineHeight:1.75, maxWidth:560, marginLeft:"auto", marginRight:"auto" }}>
           Messaging, communities, and project collaboration — all in one place. Built for teams, families, and everyone in between.
         </p>
         <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap", marginBottom:16 }}>
@@ -287,7 +287,7 @@ function SignUpScreen({ onSignUp, onGoLogin }) {
       <div style={{ width:"44%", background:`linear-gradient(155deg,${C.gradStart},${C.gradEnd})`, display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", padding:"60px 48px", borderRight:`1px solid ${C.border}`, position:"relative", overflow:"hidden" }}>
         <div style={{ position:"absolute", top:-100, right:-100, width:400, height:400, borderRadius:"50%", background:"rgba(75,163,227,0.07)" }} />
         <div style={{ position:"relative", textAlign:"center", maxWidth:340 }}>
-          <div style={{ fontFamily:F, fontWeight:800, fontSize:44, color:C.textPrimary, marginBottom:10, letterSpacing:-2 }}>Bridges</div>
+          <img src="/logo.svg" alt="Bridges" style={{ height:44, width:"auto", marginBottom:10 }} />
           <p style={{ fontFamily:F, fontSize:16, color:C.textSecondary, margin:"0 0 40px", lineHeight:1.65 }}>Join thousands of people building real connections.</p>
           <div style={{ background:"rgba(255,255,255,0.82)", borderRadius:16, padding:22, border:`1px solid ${C.border}`, textAlign:"left" }}>
             <div style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary, marginBottom:14 }}>🔒 Your data is always safe</div>
@@ -401,7 +401,7 @@ function LoginScreen({ onLogin, onGoSignUp }) {
       <div style={{ width:"44%", background:`linear-gradient(155deg,${C.gradStart},${C.gradEnd})`, display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", padding:"60px 48px", borderRight:`1px solid ${C.border}`, position:"relative", overflow:"hidden" }}>
         <div style={{ position:"absolute", top:-100, right:-100, width:400, height:400, borderRadius:"50%", background:"rgba(75,163,227,0.07)" }} />
         <div style={{ position:"relative", textAlign:"center", maxWidth:340 }}>
-          <div style={{ fontFamily:F, fontWeight:800, fontSize:44, color:C.textPrimary, marginBottom:10, letterSpacing:-2 }}>Bridges</div>
+          <img src="/logo.svg" alt="Bridges" style={{ height:44, width:"auto", marginBottom:10 }} />
           <p style={{ fontFamily:F, fontSize:16, color:C.textSecondary, margin:"0 0 40px", lineHeight:1.65 }}>Your communities and connections are waiting for you.</p>
           <div style={{ background:"rgba(255,255,255,0.82)", borderRadius:12, padding:"16px 20px", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", gap:12 }}>
             <span style={{ fontSize:24 }}>🔒</span>
@@ -585,15 +585,9 @@ const NAV = [
 function Sidebar({ active, onNav, onSignOut, user }) {
   const initials = (user?.name||"YO").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
   return (
-    <div style={{ width:240, background:C.sidebarBg, borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", flexShrink:0 }}>
-      <div style={{ padding:"22px 20px 18px", borderBottom:`1px solid ${C.border}` }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:36, height:36, borderRadius:10, background:`linear-gradient(135deg,${C.accent},${C.accentDark})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>🌉</div>
-          <div>
-            <div style={{ fontFamily:F, fontWeight:800, fontSize:18, color:C.textPrimary, letterSpacing:-0.5 }}>Bridges</div>
-            <div style={{ fontFamily:F, fontSize:10, color:C.textMuted, fontWeight:600, letterSpacing:0.8 }}>CONNECT · GROW · BUILD</div>
-          </div>
-        </div>
+    <div data-testid="sidebar" style={{ width:240, background:C.sidebarBg, borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", flexShrink:0 }}>
+      <div style={{ padding:"18px 20px 16px", borderBottom:`1px solid ${C.border}` }}>
+        <img src="/logo.svg" alt="Bridges" style={{ height:28, width:"auto" }} />
       </div>
       <div style={{ padding:"12px 10px", flex:1 }}>
         <div style={{ fontFamily:F, fontSize:10, fontWeight:700, color:C.textMuted, letterSpacing:1, padding:"6px 14px 10px", textTransform:"uppercase" }}>Menu</div>
@@ -814,62 +808,176 @@ function TopBar({ title, subtitle, users = [], onUserSelect, onNav, notification
   );
 }
 
+// ── Dashboard feed seed (mirrors data in the other screens) ──────────────────
+const DASHBOARD_FEED = [
+  { id:1,  type:"message",   color:"#34D399", avatar:"AR", source:"Alex Rivera",     body:"Hey! How's the Bridges build going?",                         time:"2m ago",  nav:"messages"  },
+  { id:2,  type:"community", color:"#4BA3E3", avatar:"FC", source:"Founders Circle", body:"Alex R. posted: Just launched our first beta 🎉 Who wants early access?", time:"10m ago", nav:"community" },
+  { id:3,  type:"project",   color:"#FBBF24", avatar:"BA", source:"Bridges App",     body:"Task completed: Wire up Supabase auth ✓",                      time:"45m ago", nav:"projects"  },
+  { id:4,  type:"community", color:"#A78BFA", avatar:"DL", source:"Design Lab",      body:"New member joined · 89 members now",                          time:"1h ago",  nav:"community" },
+  { id:5,  type:"message",   color:"#F472B6", avatar:"JL", source:"Jordan Lee",      body:"Can we sync on the community feature tomorrow?",               time:"2h ago",  nav:"messages"  },
+  { id:6,  type:"project",   color:"#FBBF24", avatar:"BA", source:"Bridges App",     body:"New task added: Build community screen",                       time:"3h ago",  nav:"projects"  },
+  { id:7,  type:"community", color:"#4BA3E3", avatar:"FC", source:"Founders Circle", body:"Jordan Lee liked your post · 12 likes total",                 time:"4h ago",  nav:"community" },
+  { id:8,  type:"message",   color:"#34D399", avatar:"AR", source:"Alex Rivera",     body:"Just pushed the new design files 🎨",                          time:"5h ago",  nav:"messages"  },
+];
+
+const FEED_FILTERS = [
+  { key:"all",       label:"All",         icon:"⊞" },
+  { key:"message",   label:"Messages",    icon:"💬" },
+  { key:"community", label:"Communities", icon:"🌐" },
+  { key:"project",   label:"Projects",    icon:"📁" },
+];
+
+const TYPE_LABELS = { message:"Message", community:"Community", project:"Project" };
+const TYPE_COLORS = { message:"#34D399", community:"#4BA3E3", project:"#FBBF24" };
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 function DashboardScreen({ user, onNav, appData }) {
+  const [filter, setFilter] = useState("all");
+
+  const hasMessages    = appData.messages.length > 0;
+  const hasCommunities = appData.communities.length > 0;
+  const hasProjects    = appData.projects.length > 0;
+
   const stats = [
-    { label:"Communities", value:appData.communities.length||0, icon:"🌐", color:"#A78BFA", nav:"community", hint:"View communities" },
-    { label:"Messages",    value:appData.messages.length||0,    icon:"💬", color:"#34D399", nav:"messages",  hint:"Open messages"   },
-    { label:"Projects",    value:appData.projects.length||0,    icon:"📁", color:"#FBBF24", nav:"projects",  hint:"View projects"   },
-    { label:"Events",      value:appData.events.length||0,      icon:"📅", color:"#FB923C", nav:null,        hint:"Coming soon"     },
+    { label:"Communities", value:appData.communities.length||0, icon:"🌐", color:"#A78BFA", nav:"community",
+      hint: hasCommunities ? "View communities →" : "Join one →" },
+    { label:"Messages",    value:appData.messages.length||0,    icon:"💬", color:"#34D399", nav:"messages",
+      hint: hasMessages    ? "Open messages →"    : "Start chatting →" },
+    { label:"Projects",    value:appData.projects.length||0,    icon:"📁", color:"#FBBF24", nav:"projects",
+      hint: hasProjects    ? "View projects →"    : "Create one →" },
+    { label:"Events",      value:appData.events.length||0,      icon:"📅", color:"#FB923C", nav:null,
+      hint:"Coming soon" },
   ];
+
+  const quickActions = [
+    { icon:"💬", label: hasMessages    ? "Send a message"     : "Start a conversation", nav:"messages"  },
+    { icon:"🌐", label: hasCommunities ? "View communities"   : "Join a community",     nav:"community" },
+    { icon:"📁", label: hasProjects    ? "View projects"      : "Create a project",     nav:"projects"  },
+    { icon:"👤", label:"Edit profile",                                                   nav:"profile"   },
+  ];
+
+  const feed = filter === "all" ? DASHBOARD_FEED : DASHBOARD_FEED.filter(f => f.type === filter);
+
   return (
     <div style={{ flex:1, overflowY:"auto", padding:28 }}>
+
+      {/* ── Stat cards ── */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:28 }}>
         {stats.map(s => (
           <Card key={s.label} onClick={s.nav ? () => onNav(s.nav) : undefined}
-            style={{ padding:20, cursor: s.nav ? "pointer" : "default", position:"relative", overflow:"hidden" }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-              <div style={{ width:40, height:40, borderRadius:12, background:`${s.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>{s.icon}</div>
-              <span style={{ fontFamily:F, fontWeight:800, fontSize:28, color:C.textPrimary }}>{s.value}</span>
+            style={{ padding:20, cursor:s.nav?"pointer":"default" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+              <div style={{ width:42, height:42, borderRadius:12, background:`${s.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>{s.icon}</div>
+              <span style={{ fontFamily:F, fontWeight:800, fontSize:30, color:C.textPrimary }}>{s.value}</span>
             </div>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-              <div style={{ fontFamily:F, fontSize:13, color:C.textSecondary, fontWeight:600 }}>{s.label}</div>
-              <div style={{ fontFamily:F, fontSize:11, color: s.nav ? s.color : C.textMuted, fontWeight:600 }}>{s.hint} {s.nav ? "→" : ""}</div>
-            </div>
+            <div style={{ fontFamily:F, fontSize:13, fontWeight:700, color:C.textPrimary, marginBottom:4 }}>{s.label}</div>
+            <div style={{ fontFamily:F, fontSize:11, fontWeight:600, color:s.nav?s.color:C.textMuted }}>{s.hint}</div>
           </Card>
         ))}
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
-        <Card style={{ padding:24 }}>
-          <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary, marginBottom:16 }}>Quick Actions</div>
+
+      {/* ── Feed + sidebar ── */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 280px", gap:24 }}>
+
+        {/* Feed */}
+        <div>
+          {/* Filter bar */}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+            <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary }}>Your Bridges Feed</div>
+            <div style={{ display:"flex", gap:6, background:C.white, border:`1px solid ${C.border}`, borderRadius:12, padding:4 }}>
+              {FEED_FILTERS.map(f => (
+                <button key={f.key} onClick={() => setFilter(f.key)}
+                  style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:8, border:"none", background:filter===f.key?C.accent:"transparent", color:filter===f.key?"#fff":C.textSecondary, fontFamily:F, fontWeight:600, fontSize:12, cursor:"pointer", transition:"all 0.15s" }}>
+                  <span style={{ fontSize:12 }}>{f.icon}</span>{f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Feed items */}
           <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {[{ icon:"💬", label:"Send a message", nav:"messages" },{ icon:"🌐", label:"Join a community", nav:"community" },{ icon:"📁", label:"Create a project", nav:"projects" },{ icon:"👤", label:"Complete your profile", nav:"profile" }].map(a => (
-              <button key={a.label} onClick={() => onNav(a.nav)} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", borderRadius:12, border:`1px solid ${C.border}`, background:C.white, cursor:"pointer", fontFamily:F, fontSize:14, color:C.textPrimary, fontWeight:500, textAlign:"left", transition:"background 0.15s" }}
-                onMouseEnter={e=>e.currentTarget.style.background=C.hover}
-                onMouseLeave={e=>e.currentTarget.style.background=C.white}>
-                <span style={{ fontSize:18 }}>{a.icon}</span>{a.label}<span style={{ marginLeft:"auto", color:C.textMuted }}>→</span>
-              </button>
-            ))}
+            {feed.length > 0 ? feed.map((item, idx) => (
+              <Card key={item.id} onClick={() => onNav(item.nav)}
+                style={{ padding:"14px 16px", cursor:"pointer", opacity:1, animation:`fadeIn 0.3s ease ${idx*0.04}s both` }}>
+                <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+                  <div style={{ width:40, height:40, borderRadius:12, background:`${item.color}20`, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:F, fontSize:12, fontWeight:800, color:item.color, flexShrink:0 }}>
+                    {item.avatar}
+                  </div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:5 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <span style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary }}>{item.source}</span>
+                        <span style={{ fontFamily:F, fontSize:10, fontWeight:700, color:"#fff", background:TYPE_COLORS[item.type], borderRadius:999, padding:"2px 8px", letterSpacing:0.3 }}>
+                          {TYPE_LABELS[item.type]}
+                        </span>
+                      </div>
+                      <span style={{ fontFamily:F, fontSize:11, color:C.textMuted, flexShrink:0, marginLeft:8 }}>{item.time}</span>
+                    </div>
+                    <div style={{ fontFamily:F, fontSize:13, color:C.textSecondary, lineHeight:1.55 }}>{item.body}</div>
+                  </div>
+                  <div style={{ color:C.textMuted, fontSize:14, flexShrink:0, marginTop:2 }}>→</div>
+                </div>
+              </Card>
+            )) : (
+              <Card style={{ padding:40 }}>
+                <div style={{ textAlign:"center" }}>
+                  <div style={{ fontSize:36, marginBottom:12, opacity:0.4 }}>
+                    {filter==="message"?"💬":filter==="community"?"🌐":"📁"}
+                  </div>
+                  <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary, marginBottom:6 }}>No {filter} activity yet</div>
+                  <div style={{ fontFamily:F, fontSize:13, color:C.textMuted }}>Activity will appear here as you use Bridges.</div>
+                </div>
+              </Card>
+            )}
           </div>
-        </Card>
-        <Card style={{ padding:24 }}>
-          <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary, marginBottom:16 }}>Your Profile</div>
-          <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
-            <div style={{ width:52, height:52, borderRadius:"50%", background:user?.color||C.accent, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:18, fontWeight:700 }}>
-              {(user?.name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}
+        </div>
+
+        {/* Sidebar */}
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+
+          {/* Profile card */}
+          <Card style={{ padding:20 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+              <div style={{ width:46, height:46, borderRadius:"50%", background:user?.color||C.accent, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:16, fontWeight:800, flexShrink:0 }}>
+                {(user?.name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}
+              </div>
+              <div style={{ minWidth:0 }}>
+                <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user?.name||"Your Name"}</div>
+                <div style={{ fontFamily:F, fontSize:12, color:C.textSecondary }}>{user?.role||"No role set"}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary }}>{user?.name||"Your Name"}</div>
-              <div style={{ fontFamily:F, fontSize:13, color:C.textSecondary }}>{user?.role||"Set your role →"}</div>
-              <div style={{ fontFamily:F, fontSize:12, color:C.textMuted }}>{user?.email||""}</div>
+            {user?.bio && <div style={{ fontFamily:F, fontSize:12, color:C.textSecondary, marginBottom:12, lineHeight:1.6, borderTop:`1px solid ${C.borderLight}`, paddingTop:12 }}>{user.bio}</div>}
+            {user?.interests?.length > 0 && (
+              <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
+                {user.interests.slice(0,4).map(i => (
+                  <span key={i} style={{ background:C.accentLight, color:C.accentDark, borderRadius:999, padding:"3px 9px", fontSize:10, fontWeight:700, fontFamily:F }}>{i}</span>
+                ))}
+              </div>
+            )}
+            <button onClick={() => onNav("profile")}
+              style={{ marginTop:14, width:"100%", padding:"8px", borderRadius:8, border:`1px solid ${C.border}`, background:"transparent", fontFamily:F, fontSize:12, fontWeight:600, color:C.accent, cursor:"pointer" }}>
+              Edit Profile →
+            </button>
+          </Card>
+
+          {/* Quick actions */}
+          <Card style={{ padding:20 }}>
+            <div style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary, marginBottom:12 }}>Quick Actions</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              {quickActions.map(a => (
+                <button key={a.label} onClick={() => onNav(a.nav)}
+                  style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 12px", borderRadius:10, border:`1px solid ${C.border}`, background:C.white, cursor:"pointer", fontFamily:F, fontSize:12, fontWeight:600, color:C.textPrimary, textAlign:"left", transition:"background 0.12s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.hover}
+                  onMouseLeave={e => e.currentTarget.style.background = C.white}>
+                  <span style={{ fontSize:15 }}>{a.icon}</span>
+                  <span style={{ flex:1 }}>{a.label}</span>
+                  <span style={{ color:C.textMuted, fontSize:11 }}>→</span>
+                </button>
+              ))}
             </div>
-          </div>
-          {user?.interests?.length > 0 && (
-            <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-              {user.interests.slice(0,4).map(i => <span key={i} style={{ background:C.accentLight, color:C.accentDark, borderRadius:999, padding:"3px 10px", fontSize:11, fontWeight:600, fontFamily:F }}>{i}</span>)}
-            </div>
-          )}
-        </Card>
+          </Card>
+
+        </div>
       </div>
     </div>
   );
@@ -965,7 +1073,10 @@ function CommunityScreen({ appData, onUpdateData }) {
 
   const createCommunity = () => {
     if (!newName.trim()) return;
-    setCommunities(p => [...p, { id:Date.now(), name:newName, desc:newDesc, members:1, color:COLORS[Math.floor(Math.random()*COLORS.length)], icon:"🌐" }]);
+    const newItem = { id:Date.now(), name:newName, desc:newDesc, members:1, color:COLORS[Math.floor(Math.random()*COLORS.length)], icon:"🌐" };
+    const updated = [...communities, newItem];
+    setCommunities(updated);
+    onUpdateData?.({ communities: updated });
     setShowNew(false); setNewName(""); setNewDesc("");
   };
   const addPost = () => {
@@ -1063,7 +1174,10 @@ function ProjectsScreen({ appData, onUpdateData }) {
 
   const createProject = () => {
     if (!newName.trim()) return;
-    setProjects(p => [...p, { id:Date.now(), name:newName, desc:"", progress:0, color:COLORS[Math.floor(Math.random()*COLORS.length)], tasks:[] }]);
+    const newItem = { id:Date.now(), name:newName, desc:"", progress:0, color:COLORS[Math.floor(Math.random()*COLORS.length)], tasks:[] };
+    const updated = [...projects, newItem];
+    setProjects(updated);
+    onUpdateData?.({ projects: updated });
     setShowNew(false); setNewName("");
   };
   const addTask = () => {
@@ -1364,8 +1478,7 @@ function LoadingScreen() {
   return (
     <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:C.pageBg, fontFamily:F }}>
       <div style={{ textAlign:"center" }}>
-        <div style={{ width:52, height:52, borderRadius:14, background:`linear-gradient(135deg,${C.accent},${C.accentDark})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, margin:"0 auto 16px" }}>🌉</div>
-        <div style={{ fontFamily:F, fontWeight:800, fontSize:22, color:C.textPrimary, marginBottom:8 }}>Bridges</div>
+        <img src="/logo.svg" alt="Bridges" style={{ height:40, width:"auto", marginBottom:16 }} />
         <div style={{ fontFamily:F, fontSize:13, color:C.textMuted }}>Loading your workspace...</div>
       </div>
     </div>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" fill="none">
+  <!-- Bridge arch mark -->
+  <!-- Left pillar with vertical stripes -->
+  <rect x="0" y="0" width="48" height="96" rx="0" fill="#0D1B2A"/>
+  <!-- Stripe cutouts on left pillar -->
+  <rect x="6"  y="0" width="3" height="96" fill="#EEF4FB"/>
+  <rect x="12" y="0" width="3" height="96" fill="#EEF4FB"/>
+  <rect x="18" y="0" width="3" height="96" fill="#EEF4FB"/>
+  <rect x="24" y="0" width="3" height="96" fill="#EEF4FB"/>
+  <rect x="30" y="0" width="3" height="96" fill="#EEF4FB"/>
+  <!-- Right block (top of arch) -->
+  <rect x="48" y="0" width="72" height="96" rx="0" fill="#0D1B2A"/>
+  <!-- Arch cutout -->
+  <path d="M48 96 Q84 36 120 96 Z" fill="#EEF4FB"/>
+  <!-- Wordmark -->
+  <text x="140" y="76" font-family="'Plus Jakarta Sans','DM Sans',Arial,sans-serif" font-weight="800" font-size="68" fill="#0D1B2A" letter-spacing="-2">Bridges</text>
+</svg>
