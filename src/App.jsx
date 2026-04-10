@@ -150,43 +150,90 @@ const DEMO_USER = {
 function LandingScreen({ onSignUp, onLogin, onDemo }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { setTimeout(() => setVisible(true), 80); }, []);
+
+  const features = [
+    { icon:"💬", color:"#34D399", title:"Real-time Messaging", desc:"Direct messages and group chats with instant delivery. Your conversations, always in sync." },
+    { icon:"🌐", color:"#A78BFA", title:"Communities", desc:"Create or join communities around any topic. A shared board, live chat, and events all in one place." },
+    { icon:"📁", color:"#FBBF24", title:"Project Collaboration", desc:"Organise work with tasks, progress tracking, and team updates — all connected to your conversations." },
+  ];
+
+  const trust = [
+    { icon:"🔒", label:"End-to-end encrypted" },
+    { icon:"🛡️", label:"GDPR compliant" },
+    { icon:"✅", label:"We never sell your data" },
+    { icon:"🔐", label:"AES-256 at rest" },
+  ];
+
   return (
-    <div style={{ minHeight:"100vh", background:`linear-gradient(160deg,${C.gradStart} 0%,${C.gradEnd} 55%,${C.pageBg} 100%)`, fontFamily:F }}>
-      <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"18px 48px", background:"rgba(255,255,255,0.85)", backdropFilter:"blur(12px)", borderBottom:`1px solid ${C.border}`, position:"sticky", top:0, zIndex:100 }}>
+    <div style={{ minHeight:"100vh", background:`linear-gradient(160deg,${C.gradStart} 0%,${C.gradEnd} 60%,${C.pageBg} 100%)`, fontFamily:F }}>
+
+      {/* ── Nav ── */}
+      <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 48px", background:"rgba(255,255,255,0.88)", backdropFilter:"blur(14px)", borderBottom:`1px solid ${C.border}`, position:"sticky", top:0, zIndex:100 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           <div style={{ width:34, height:34, borderRadius:10, background:`linear-gradient(135deg,${C.accent},${C.accentDark})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>🌉</div>
           <span style={{ fontFamily:F, fontWeight:800, fontSize:20, color:C.textPrimary, letterSpacing:-0.5 }}>Bridges</span>
         </div>
-        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-          <button onClick={onLogin} style={{ background:"none", border:"none", fontFamily:F, fontWeight:600, fontSize:14, color:C.textSecondary, cursor:"pointer", padding:"8px 16px" }}>Sign in</button>
-          <Btn onClick={onDemo} small variant="ghost">Try Demo</Btn>
+        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+          <button onClick={onLogin} style={{ background:"none", border:"none", fontFamily:F, fontWeight:600, fontSize:14, color:C.textSecondary, cursor:"pointer", padding:"8px 16px", borderRadius:8 }}>Sign in</button>
+          <Btn onClick={onDemo} small variant="ghost">▶ Try Demo</Btn>
           <Btn onClick={onSignUp} small>Get Started Free →</Btn>
         </div>
       </nav>
-      <div style={{ textAlign:"center", padding:"90px 48px 70px", opacity:visible?1:0, transform:visible?"translateY(0)":"translateY(28px)", transition:"all 0.65s ease" }}>
-        <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:C.accentLight, color:C.accentDark, borderRadius:999, padding:"6px 16px", fontFamily:F, fontSize:12, fontWeight:700, marginBottom:28, letterSpacing:0.5 }}>🚀 NOW IN BETA</div>
-        <h1 style={{ fontFamily:F, fontWeight:800, fontSize:72, color:C.textPrimary, letterSpacing:-3, margin:"0 0 20px", lineHeight:1.0 }}>Bridges</h1>
-        <p style={{ fontFamily:F, fontSize:22, color:C.textSecondary, margin:"0 0 14px", fontWeight:400 }}>Connect everyone. Seamlessly.</p>
-        <p style={{ fontFamily:F, fontSize:16, color:C.textMuted, margin:"0 0 48px", maxWidth:500, marginLeft:"auto", marginRight:"auto", lineHeight:1.75 }}>The communication platform that brings teams, families, and communities together — with real-time messaging, group collaboration, and crystal-clear video calls.</p>
-        <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
-          <Btn onClick={onSignUp}>Create Free Account →</Btn>
-          <Btn onClick={onDemo} variant="ghost" icon="▶">Try Demo — No sign-up needed</Btn>
-          <Btn onClick={onLogin} variant="outline">Sign in to existing account</Btn>
+
+      {/* ── Hero ── */}
+      <div style={{ maxWidth:780, margin:"0 auto", textAlign:"center", padding:"100px 32px 72px", opacity:visible?1:0, transform:visible?"translateY(0)":"translateY(24px)", transition:"all 0.6s ease" }}>
+        <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:C.accentLight, color:C.accentDark, borderRadius:999, padding:"5px 14px", fontFamily:F, fontSize:12, fontWeight:700, marginBottom:24, letterSpacing:0.6 }}>🚀 NOW IN BETA</div>
+        <h1 style={{ fontFamily:F, fontWeight:800, fontSize:68, color:C.textPrimary, letterSpacing:-3, margin:"0 0 18px", lineHeight:1.0 }}>
+          The platform that<br />
+          <span style={{ color:C.accent }}>brings people together</span>
+        </h1>
+        <p style={{ fontFamily:F, fontSize:18, color:C.textSecondary, margin:"0 0 44px", lineHeight:1.75, maxWidth:560, marginLeft:"auto", marginRight:"auto" }}>
+          Messaging, communities, and project collaboration — all in one place. Built for teams, families, and everyone in between.
+        </p>
+        <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap", marginBottom:16 }}>
+          <Btn onClick={onSignUp} icon="✦">Create Free Account</Btn>
+          <Btn onClick={onDemo} variant="ghost" icon="▶">Try Demo — no sign-up needed</Btn>
         </div>
-        <p style={{ fontFamily:F, fontSize:12, color:C.textMuted, marginTop:18 }}>No credit card required · Free to get started · Your data stays yours</p>
+        <p style={{ fontFamily:F, fontSize:12, color:C.textMuted }}>No credit card required · Free to get started · Your data stays yours</p>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, padding:"0 48px 80px", maxWidth:1080, margin:"0 auto" }}>
-        {[{ icon:"💬", title:"Real-time Messaging", desc:"Chat with anyone, instantly." },{ icon:"🌐", title:"Communities", desc:"Create and join groups around any topic." },{ icon:"📁", title:"Project Collaboration", desc:"Tasks, progress tracking, and file sharing." },{ icon:"📹", title:"Video Calls", desc:"Crystal-clear video calls in your browser." }].map((f,i) => (
-          <div key={f.title} style={{ background:"rgba(255,255,255,0.72)", borderRadius:20, padding:24, border:`1px solid ${C.border}`, backdropFilter:"blur(8px)", opacity:visible?1:0, transform:visible?"translateY(0)":"translateY(18px)", transition:`all 0.5s ease ${0.1+i*0.1}s` }}>
-            <div style={{ fontSize:30, marginBottom:12 }}>{f.icon}</div>
-            <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary, marginBottom:6 }}>{f.title}</div>
-            <div style={{ fontFamily:F, fontSize:13, color:C.textSecondary, lineHeight:1.55 }}>{f.desc}</div>
+
+      {/* ── Trust bar ── */}
+      <div style={{ display:"flex", justifyContent:"center", gap:0, flexWrap:"wrap", padding:"14px 48px", borderTop:`1px solid ${C.border}`, borderBottom:`1px solid ${C.border}`, background:"rgba(255,255,255,0.5)", backdropFilter:"blur(8px)", marginBottom:80 }}>
+        {trust.map((t, i) => (
+          <div key={t.label} style={{ display:"flex", alignItems:"center", gap:7, padding:"6px 24px", borderRight: i < trust.length-1 ? `1px solid ${C.border}` : "none" }}>
+            <span style={{ fontSize:14 }}>{t.icon}</span>
+            <span style={{ fontFamily:F, fontSize:13, fontWeight:600, color:C.textSecondary }}>{t.label}</span>
           </div>
         ))}
       </div>
-      <div style={{ borderTop:`1px solid ${C.border}`, background:"rgba(255,255,255,0.6)", padding:"18px 48px", display:"flex", justifyContent:"center", gap:36, flexWrap:"wrap" }}>
-        {["🔒 End-to-end encrypted","🛡️ GDPR compliant","✅ We never sell your data","🔐 AES-256 at rest"].map(b => <span key={b} style={{ fontFamily:F, fontSize:13, color:C.textSecondary, fontWeight:600 }}>{b}</span>)}
+
+      {/* ── Feature cards ── */}
+      <div style={{ maxWidth:1040, margin:"0 auto", padding:"0 48px 100px" }}>
+        <div style={{ textAlign:"center", marginBottom:48 }}>
+          <h2 style={{ fontFamily:F, fontWeight:800, fontSize:34, color:C.textPrimary, letterSpacing:-1, margin:"0 0 12px" }}>Everything your community needs</h2>
+          <p style={{ fontFamily:F, fontSize:16, color:C.textSecondary, margin:0 }}>Powerful tools, simple enough for everyone.</p>
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24 }}>
+          {features.map((f, i) => (
+            <div key={f.title} style={{ background:"rgba(255,255,255,0.80)", borderRadius:20, padding:"28px 26px", border:`1px solid ${C.border}`, backdropFilter:"blur(10px)", opacity:visible?1:0, transform:visible?"translateY(0)":"translateY(20px)", transition:`all 0.5s ease ${0.1+i*0.1}s`, boxShadow:"0 2px 20px rgba(13,27,42,0.04)" }}>
+              <div style={{ width:48, height:48, borderRadius:14, background:`${f.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, marginBottom:16 }}>{f.icon}</div>
+              <div style={{ fontFamily:F, fontWeight:700, fontSize:17, color:C.textPrimary, marginBottom:8, letterSpacing:-0.3 }}>{f.title}</div>
+              <div style={{ fontFamily:F, fontSize:14, color:C.textSecondary, lineHeight:1.65 }}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* ── Bottom CTA ── */}
+      <div style={{ background:`linear-gradient(135deg,${C.accent},${C.accentDark})`, padding:"60px 48px", textAlign:"center" }}>
+        <h2 style={{ fontFamily:F, fontWeight:800, fontSize:32, color:"#fff", letterSpacing:-1, margin:"0 0 12px" }}>Ready to build your community?</h2>
+        <p style={{ fontFamily:F, fontSize:16, color:"rgba(255,255,255,0.8)", margin:"0 0 32px" }}>Join Bridges for free — no credit card, no limits to start.</p>
+        <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+          <button onClick={onSignUp} style={{ background:"#fff", border:"none", borderRadius:999, padding:"14px 32px", fontFamily:F, fontWeight:700, fontSize:15, color:C.accentDark, cursor:"pointer" }}>Create Free Account →</button>
+          <button onClick={onLogin} style={{ background:"rgba(255,255,255,0.15)", border:"2px solid rgba(255,255,255,0.4)", borderRadius:999, padding:"14px 32px", fontFamily:F, fontWeight:700, fontSize:15, color:"#fff", cursor:"pointer" }}>Sign In</button>
+        </div>
+      </div>
+
     </div>
   );
 }

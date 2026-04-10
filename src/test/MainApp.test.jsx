@@ -89,7 +89,7 @@ describe('Sidebar navigation', () => {
     await screen.findByText('Dashboard');
     await user.click(screen.getByTitle('Sign out'));
     expect(mockSignOut).toHaveBeenCalled();
-    expect(await screen.findByText(/Connect everyone/i)).toBeInTheDocument();
+    expect(await screen.findByText(/brings people together/i)).toBeInTheDocument();
   });
 });
 
@@ -527,7 +527,7 @@ describe('SettingsScreen', () => {
     await user.click(screen.getByText('Sign Out'));
     await user.click(screen.getByRole('button', { name: /Yes, sign out/i }));
     expect(mockSignOut).toHaveBeenCalled();
-    expect(await screen.findByText(/Connect everyone/i)).toBeInTheDocument();
+    expect(await screen.findByText(/brings people together/i)).toBeInTheDocument();
   });
 
   it('loads saved notification preferences from user metadata', async () => {
@@ -603,7 +603,7 @@ describe('App – getSession network failure', () => {
       data: { subscription: { unsubscribe: vi.fn() } },
     });
     render(<App />);
-    expect(await screen.findByText(/Connect everyone/i)).toBeInTheDocument();
+    expect(await screen.findByText(/brings people together/i)).toBeInTheDocument();
   });
 });
 
@@ -619,7 +619,7 @@ describe('SignUpScreen – network error handling', () => {
     mockSignUp.mockRejectedValue(new Error('fetch failed'));
     const user = userEvent.setup();
     render(<App />);
-    await user.click(await screen.findByText(/Get Started Free/i));
+    await user.click(await screen.findByRole('button', { name: /Get Started Free/i }));
     await user.type(screen.getByPlaceholderText(/Your full name/i), 'Jane');
     await user.type(screen.getByPlaceholderText(/you@example\.com/i), 'jane@example.com');
     await user.type(screen.getByPlaceholderText(/Create a strong password/i), 'SecureP1!');

@@ -20,7 +20,7 @@ describe('App – initial screen (session check)', () => {
   it('shows landing screen when no session exists', async () => {
     mockGetSession.mockResolvedValue({ data: { session: null } });
     render(<App />);
-    expect(await screen.findByText(/Connect everyone/i)).toBeInTheDocument();
+    expect(await screen.findByText(/brings people together/i)).toBeInTheDocument();
   });
 
   it('shows main app when session exists with onboarded user', async () => {
@@ -82,12 +82,12 @@ describe('App – auth state change listener', () => {
       return { data: { subscription: { unsubscribe: vi.fn() } } };
     });
     render(<App />);
-    await screen.findByText(/Connect everyone/i);
+    await screen.findByText(/brings people together/i);
 
     // Simulate a sign-out event
     authCallback('SIGNED_OUT', null);
     await waitFor(() => {
-      expect(screen.getByText(/Connect everyone/i)).toBeInTheDocument();
+      expect(screen.getByText(/brings people together/i)).toBeInTheDocument();
     });
   });
 
@@ -140,7 +140,7 @@ describe('App – sign out', () => {
     // Sign out button lives in the sidebar
     await user.click(screen.getByTitle('Sign out'));
     expect(mockSignOut).toHaveBeenCalled();
-    expect(await screen.findByText(/Connect everyone/i)).toBeInTheDocument();
+    expect(await screen.findByText(/brings people together/i)).toBeInTheDocument();
   });
 });
 
@@ -152,7 +152,7 @@ describe('App – landing screen navigation', () => {
   it('navigates to sign-up when "Get Started Free" is clicked', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(await screen.findByText(/Get Started Free/i));
+    await user.click(await screen.findByRole('button', { name: /Get Started Free/i }));
     expect(screen.getByText('Create your account')).toBeInTheDocument();
   });
 
@@ -166,7 +166,9 @@ describe('App – landing screen navigation', () => {
   it('navigates to sign-up from "Create Free Account" CTA', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(await screen.findByText(/Create Free Account/i));
+    // Multiple "Create Free Account" buttons exist — click the first (hero)
+    const btns = await screen.findAllByText(/Create Free Account/i);
+    await user.click(btns[0]);
     expect(screen.getByText('Create your account')).toBeInTheDocument();
   });
 });
@@ -182,7 +184,7 @@ describe('App – full sign-up → onboarding flow', () => {
 
     const user = userEvent.setup();
     render(<App />);
-    await user.click(await screen.findByText(/Get Started Free/i));
+    await user.click(await screen.findByRole('button', { name: /Get Started Free/i }));
     await user.type(screen.getByPlaceholderText(/Your full name/i), 'Sam Smith');
     await user.type(screen.getByPlaceholderText(/you@example\.com/i), 'sam@example.com');
     await user.type(screen.getByPlaceholderText(/Create a strong password/i), 'SecureP1!');
