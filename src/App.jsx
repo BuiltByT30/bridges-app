@@ -988,6 +988,8 @@ function MessagesScreen({ appData, onUpdateData, initialSelectedId, onClearSelec
   const [selected, setSelected] = useState(initialSelectedId || null);
   const [input, setInput] = useState("");
   const [chats, setChats] = useState([]);
+  const [showNewChat, setShowNewChat] = useState(false);
+  const [newChatName, setNewChatName] = useState("");
 
   useEffect(() => {
     if (initialSelectedId) {
@@ -1001,11 +1003,38 @@ function MessagesScreen({ appData, onUpdateData, initialSelectedId, onClearSelec
     setChats(prev => prev.map(c => c.id===selected ? { ...c, messages:[...c.messages, { id:Date.now(), text:input, mine:true, time:"Now" }] } : c));
     setInput("");
   };
+  const startChat = () => {
+    if (!newChatName.trim()) return;
+    const nc = { id:Date.now(), name:newChatName.trim(), color:COLORS[Math.floor(Math.random()*COLORS.length)], online:false, messages:[] };
+    setChats(prev => [...prev, nc]);
+    setSelected(nc.id);
+    setShowNewChat(false);
+    setNewChatName("");
+  };
   return (
     <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
       <div style={{ width:280, borderRight:`1px solid ${C.border}`, background:C.white, overflowY:"auto", flexShrink:0 }}>
-        <div style={{ padding:"16px 16px 8px", fontFamily:F, fontWeight:700, fontSize:13, color:C.textMuted, letterSpacing:0.5 }}>DIRECT MESSAGES</div>
-        {chats.length === 0
+        <div style={{ padding:"16px 16px 8px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <span style={{ fontFamily:F, fontWeight:700, fontSize:13, color:C.textMuted, letterSpacing:0.5 }}>DIRECT MESSAGES</span>
+          <button onClick={() => { setShowNewChat(n => !n); setNewChatName(""); }} title="New message" style={{ background:"none", border:"none", color:C.accent, cursor:"pointer", fontSize:20, lineHeight:1, padding:"0 2px", fontWeight:300 }}>+</button>
+        </div>
+        {showNewChat && (
+          <div style={{ padding:"4px 12px 12px", borderBottom:`1px solid ${C.border}` }}>
+            <input
+              autoFocus
+              value={newChatName}
+              onChange={e=>setNewChatName(e.target.value)}
+              onKeyDown={e=>{ if(e.key==="Enter") startChat(); if(e.key==="Escape"){ setShowNewChat(false); setNewChatName(""); } }}
+              placeholder="Enter a name..."
+              style={{ width:"100%", boxSizing:"border-box", border:`1.5px solid ${C.border}`, borderRadius:10, padding:"8px 12px", fontFamily:F, fontSize:13, outline:"none", marginBottom:8 }}
+            />
+            <div style={{ display:"flex", gap:6 }}>
+              <Btn onClick={startChat} small disabled={!newChatName.trim()}>Start Chat</Btn>
+              <Btn onClick={() => { setShowNewChat(false); setNewChatName(""); }} small variant="outline">Cancel</Btn>
+            </div>
+          </div>
+        )}
+        {chats.length === 0 && !showNewChat
           ? <div style={{ padding:20 }}><EmptyState icon="💬" title="No messages yet" subtitle="Start a conversation once you connect with people." /></div>
           : chats.map(c => (
           <div key={c.id} onClick={() => setSelected(c.id)} style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", cursor:"pointer", background:selected===c.id?C.accentLight:"transparent", borderLeft:`3px solid ${selected===c.id?C.accent:"transparent"}`, transition:"all 0.15s" }}>
@@ -1057,6 +1086,7 @@ function CommunityScreen({ appData, onUpdateData }) {
     { id:1, name:"Founders Circle", desc:"For builders, makers, and early-stage founders.", members:142, color:"#1A5FAD", icon:"🚀" },
     { id:2, name:"Design Lab", desc:"Share work, get feedback, discuss design thinking.", members:89, color:"#A78BFA", icon:"🎨" },
   ]);
+  const [commCollapsed, setCommCollapsed] = useState(false);
   const [selected, setSelected] = useState(null);
   const [showNew, setShowNew] = useState(false);
   const [newName, setNewName] = useState("");
@@ -1067,6 +1097,13 @@ function CommunityScreen({ appData, onUpdateData }) {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
   const [menuOpenId, setMenuOpenId] = useState(null);
+  const [events, setEvents] = useState([
+    { id:1, title:"Founders Weekly Sync", date:"2026-04-20", desc:"Weekly call for all founders in the circle.", rsvps:14, rsvped:false },
+  ]);
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [newEventTitle, setNewEventTitle] = useState("");
+  const [newEventDate, setNewEventDate] = useState("");
+  const [newEventDesc, setNewEventDesc] = useState("");
   const active = communities.find(c => c.id === selected);
 
   const createCommunity = () => {
@@ -1081,6 +1118,14 @@ function CommunityScreen({ appData, onUpdateData }) {
     if (!postInput.trim()) return;
     setPosts(p => [{ id:Date.now(), author:"You", text:postInput, time:"Just now", reactions:{"👍":0,"❤️":0,"😂":0,"🔥":0} }, ...p]);
     setPostInput("");
+  };
+  const createEvent = () => {
+    if (!newEventTitle.trim()) return;
+    setEvents(e => [...e, { id:Date.now(), title:newEventTitle, date:newEventDate, desc:newEventDesc, rsvps:0, rsvped:false }]);
+    setShowCreateEvent(false); setNewEventTitle(""); setNewEventDate(""); setNewEventDesc("");
+  };
+  const toggleRsvp = (id) => {
+    setEvents(evts => evts.map(e => e.id===id ? { ...e, rsvped:!e.rsvped, rsvps:e.rsvped?e.rsvps-1:e.rsvps+1 } : e));
   };
 
   if (selected && active) {
@@ -1147,7 +1192,45 @@ function CommunityScreen({ appData, onUpdateData }) {
               ))}
             </>
           )}
-          {tab !== "board" && <EmptyState icon={tab==="chat"?"💬":tab==="events"?"📅":"📁"} title={`${tab.charAt(0).toUpperCase()+tab.slice(1)} coming soon`} subtitle="This feature is being built. Check back soon!" />}
+          {tab === "events" && (
+            <>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+                <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary }}>Events</div>
+                <Btn onClick={() => setShowCreateEvent(true)} small icon="+">Create Event</Btn>
+              </div>
+              {showCreateEvent && (
+                <Card style={{ padding:20, marginBottom:20 }}>
+                  <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary, marginBottom:14 }}>New Event</div>
+                  <Field label="Title" value={newEventTitle} onChange={setNewEventTitle} placeholder="Event name" />
+                  <Field label="Date" type="date" value={newEventDate} onChange={setNewEventDate} />
+                  <Field label="Description" value={newEventDesc} onChange={setNewEventDesc} placeholder="What's this event about?" />
+                  <div style={{ display:"flex", gap:10 }}>
+                    <Btn onClick={createEvent} disabled={!newEventTitle.trim()}>Create</Btn>
+                    <Btn onClick={() => setShowCreateEvent(false)} variant="outline">Cancel</Btn>
+                  </div>
+                </Card>
+              )}
+              {events.length === 0
+                ? <EmptyState icon="📅" title="No events yet" subtitle="Create an event to get the community together." />
+                : events.map(e => (
+                  <Card key={e.id} style={{ padding:20, marginBottom:14 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary }}>{e.title}</div>
+                        {e.date && <div style={{ fontFamily:F, fontSize:12, color:C.textMuted, marginTop:3 }}>📅 {new Date(e.date+"T00:00:00").toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}</div>}
+                        {e.desc && <p style={{ fontFamily:F, fontSize:13, color:C.textSecondary, margin:"8px 0 0", lineHeight:1.5 }}>{e.desc}</p>}
+                        <div style={{ fontFamily:F, fontSize:12, color:C.textMuted, marginTop:8 }}>{e.rsvps} {e.rsvps===1?"person":"people"} going</div>
+                      </div>
+                      <button onClick={() => toggleRsvp(e.id)} style={{ background:e.rsvped?C.accent:C.white, color:e.rsvped?"white":C.textPrimary, border:`1.5px solid ${e.rsvped?C.accent:C.border}`, borderRadius:10, padding:"8px 16px", fontFamily:F, fontSize:13, fontWeight:600, cursor:"pointer", flexShrink:0, marginLeft:12, transition:"all 0.15s" }}>
+                        {e.rsvped?"✓ Going":"RSVP"}
+                      </button>
+                    </div>
+                  </Card>
+                ))
+              }
+            </>
+          )}
+          {(tab === "chat" || tab === "files") && <EmptyState icon={tab==="chat"?"💬":"📁"} title={`${tab.charAt(0).toUpperCase()+tab.slice(1)} coming soon`} subtitle="This feature is being built. Check back soon!" />}
         </div>
       </div>
     );
@@ -1156,7 +1239,10 @@ function CommunityScreen({ appData, onUpdateData }) {
   return (
     <div style={{ flex:1, overflowY:"auto", padding:28 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
-        <div style={{ fontFamily:F, fontWeight:700, fontSize:18, color:C.textPrimary }}>Communities</div>
+        <div style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer" }} onClick={() => setCommCollapsed(c => !c)}>
+          <span style={{ fontFamily:F, fontWeight:700, fontSize:18, color:C.textPrimary }}>Communities</span>
+          <span style={{ fontSize:12, color:C.textMuted, transition:"transform 0.2s", display:"inline-block", transform: commCollapsed ? "rotate(-90deg)" : "rotate(0deg)" }}>▼</span>
+        </div>
         <Btn onClick={() => setShowNew(true)} small icon="+">New Community</Btn>
       </div>
       {showNew && (
@@ -1170,42 +1256,59 @@ function CommunityScreen({ appData, onUpdateData }) {
           </div>
         </Card>
       )}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:16 }}>
-        {communities.map(c => (
-          <Card key={c.id} onClick={() => setSelected(c.id)} style={{ padding:24 }}>
-            <div style={{ display:"flex", gap:12, alignItems:"flex-start", marginBottom:14 }}>
-              <div style={{ width:44, height:44, borderRadius:12, background:`${c.color}20`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>{c.icon}</div>
-              <div>
-                <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary }}>{c.name}</div>
-                <div style={{ fontFamily:F, fontSize:12, color:C.textMuted }}>{c.members} members</div>
+      {!commCollapsed && (
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:16 }}>
+          {communities.map(c => (
+            <Card key={c.id} onClick={() => setSelected(c.id)} style={{ padding:24 }}>
+              <div style={{ display:"flex", gap:12, alignItems:"flex-start", marginBottom:14 }}>
+                <div style={{ width:44, height:44, borderRadius:12, background:`${c.color}20`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>{c.icon}</div>
+                <div>
+                  <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary }}>{c.name}</div>
+                  <div style={{ fontFamily:F, fontSize:12, color:C.textMuted }}>{c.members} members</div>
+                </div>
               </div>
-            </div>
-            <p style={{ fontFamily:F, fontSize:13, color:C.textSecondary, margin:0, lineHeight:1.5 }}>{c.desc}</p>
-          </Card>
-        ))}
-      </div>
+              <p style={{ fontFamily:F, fontSize:13, color:C.textSecondary, margin:0, lineHeight:1.5 }}>{c.desc}</p>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 // ── Projects ──────────────────────────────────────────────────────────────────
 function ProjectsScreen({ appData, onUpdateData }) {
+  const STATUS_LIST = ["To Do","In Progress","Done"];
+  const PRIORITY_LIST = ["High","Medium","Low"];
+  const STATUS_COLOR = { "To Do":C.textMuted, "In Progress":C.accent, "Done":"#34C759" };
+  const PRIORITY_COLOR = { High:"#EF4444", Medium:C.warning, Low:"#34C759" };
   const [projects, setProjects] = useState([
-    { id:1, name:"Bridges App", desc:"Building the core platform", progress:65, color:"#1A5FAD", tasks:[{ id:1, text:"Wire up Supabase auth", done:true },{ id:2, text:"Build community screen", done:false }] },
+    { id:1, name:"Bridges App", desc:"Building the core platform", progress:65, color:"#1A5FAD", status:"In Progress", priority:"High", dueDate:"2026-05-01", tasks:[{ id:1, text:"Wire up Supabase auth", done:true },{ id:2, text:"Build community screen", done:false }] },
   ]);
   const [selected, setSelected] = useState(null);
   const [showNew, setShowNew] = useState(false);
   const [newName, setNewName] = useState("");
+  const [newStatus, setNewStatus] = useState("To Do");
+  const [newPriority, setNewPriority] = useState("Medium");
+  const [newDueDate, setNewDueDate] = useState("");
   const [taskInput, setTaskInput] = useState("");
+  const [tasksCollapsed, setTasksCollapsed] = useState(false);
   const active = projects.find(p => p.id === selected);
 
   const createProject = () => {
     if (!newName.trim()) return;
-    const newItem = { id:Date.now(), name:newName, desc:"", progress:0, color:COLORS[Math.floor(Math.random()*COLORS.length)], tasks:[] };
+    const newItem = { id:Date.now(), name:newName, desc:"", progress:0, color:COLORS[Math.floor(Math.random()*COLORS.length)], status:newStatus, priority:newPriority, dueDate:newDueDate, tasks:[] };
     const updated = [...projects, newItem];
     setProjects(updated);
     onUpdateData?.({ projects: updated });
-    setShowNew(false); setNewName("");
+    setShowNew(false); setNewName(""); setNewStatus("To Do"); setNewPriority("Medium"); setNewDueDate("");
+  };
+  const cycleStatus = () => {
+    setProjects(prev => prev.map(p => {
+      if (p.id !== selected) return p;
+      const idx = STATUS_LIST.indexOf(p.status || "To Do");
+      return { ...p, status: STATUS_LIST[(idx+1) % STATUS_LIST.length] };
+    }));
   };
   const addTask = () => {
     if (!taskInput.trim() || !selected) return;
@@ -1227,29 +1330,41 @@ function ProjectsScreen({ appData, onUpdateData }) {
         <button onClick={() => setSelected(null)} style={{ background:"none", border:"none", fontFamily:F, color:C.accent, fontWeight:600, cursor:"pointer", fontSize:14, marginBottom:20 }}>← Back to Projects</button>
         <div style={{ display:"flex", gap:16, alignItems:"flex-start", marginBottom:28 }}>
           <div style={{ width:48, height:48, borderRadius:14, background:`${active.color}20`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>📁</div>
-          <div>
-            <div style={{ fontFamily:F, fontWeight:800, fontSize:22, color:C.textPrimary }}>{active.name}</div>
-            <div style={{ fontFamily:F, fontSize:13, color:C.textSecondary }}>{active.progress}% complete</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:F, fontWeight:800, fontSize:22, color:C.textPrimary, marginBottom:6 }}>{active.name}</div>
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center" }}>
+              <button onClick={cycleStatus} title="Click to change status" style={{ background:`${STATUS_COLOR[active.status||"To Do"]}20`, color:STATUS_COLOR[active.status||"To Do"], border:`1px solid ${STATUS_COLOR[active.status||"To Do"]}50`, borderRadius:999, padding:"3px 10px", fontFamily:F, fontSize:12, fontWeight:700, cursor:"pointer" }}>{active.status||"To Do"}</button>
+              <span style={{ background:`${PRIORITY_COLOR[active.priority||"Medium"]}20`, color:PRIORITY_COLOR[active.priority||"Medium"], border:`1px solid ${PRIORITY_COLOR[active.priority||"Medium"]}50`, borderRadius:999, padding:"3px 10px", fontFamily:F, fontSize:12, fontWeight:700 }}>{active.priority||"Medium"} priority</span>
+              {active.dueDate && <span style={{ fontFamily:F, fontSize:12, color:C.textMuted }}>Due {new Date(active.dueDate+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>}
+              <span style={{ fontFamily:F, fontSize:12, color:C.textSecondary }}>{active.progress}% complete</span>
+            </div>
           </div>
         </div>
         <div style={{ background:C.border, borderRadius:8, height:8, marginBottom:28, overflow:"hidden" }}>
           <div style={{ width:`${active.progress}%`, height:"100%", background:active.color, borderRadius:8, transition:"width 0.4s" }} />
         </div>
         <Card style={{ padding:24 }}>
-          <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary, marginBottom:16 }}>Tasks</div>
-          <div style={{ display:"flex", gap:10, marginBottom:16 }}>
-            <input value={taskInput} onChange={e=>setTaskInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTask()} placeholder="Add a task..." style={{ flex:1, border:`1.5px solid ${C.border}`, borderRadius:10, padding:"10px 14px", fontFamily:F, fontSize:14, outline:"none" }} />
-            <Btn onClick={addTask} small disabled={!taskInput.trim()}>Add</Btn>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: tasksCollapsed ? 0 : 16, cursor:"pointer" }} onClick={() => setTasksCollapsed(c => !c)}>
+            <div style={{ fontFamily:F, fontWeight:700, fontSize:16, color:C.textPrimary }}>Tasks <span style={{ fontFamily:F, fontWeight:400, fontSize:13, color:C.textMuted }}>({active.tasks.length})</span></div>
+            <span style={{ fontSize:12, color:C.textMuted, transition:"transform 0.2s", display:"inline-block", transform: tasksCollapsed ? "rotate(-90deg)" : "rotate(0deg)" }}>▼</span>
           </div>
-          {active.tasks.map(t => (
-            <div key={t.id} onClick={() => toggleTask(t.id)} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", cursor:"pointer", borderBottom:`1px solid ${C.borderLight}` }}>
-              <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${t.done?C.accent:C.border}`, background:t.done?C.accent:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
-                {t.done && <span style={{ color:"white", fontSize:11, fontWeight:700 }}>✓</span>}
+          {!tasksCollapsed && (
+            <>
+              <div style={{ display:"flex", gap:10, marginBottom:16 }}>
+                <input value={taskInput} onChange={e=>setTaskInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTask()} placeholder="Add a task..." style={{ flex:1, border:`1.5px solid ${C.border}`, borderRadius:10, padding:"10px 14px", fontFamily:F, fontSize:14, outline:"none" }} />
+                <Btn onClick={addTask} small disabled={!taskInput.trim()}>Add</Btn>
               </div>
-              <span style={{ fontFamily:F, fontSize:14, color:t.done?C.textMuted:C.textPrimary, textDecoration:t.done?"line-through":"none" }}>{t.text}</span>
-            </div>
-          ))}
-          {!active.tasks.length && <p style={{ fontFamily:F, fontSize:13, color:C.textMuted, margin:0 }}>No tasks yet. Add one above.</p>}
+              {active.tasks.map(t => (
+                <div key={t.id} onClick={() => toggleTask(t.id)} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", cursor:"pointer", borderBottom:`1px solid ${C.borderLight}` }}>
+                  <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${t.done?C.accent:C.border}`, background:t.done?C.accent:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                    {t.done && <span style={{ color:"white", fontSize:11, fontWeight:700 }}>✓</span>}
+                  </div>
+                  <span style={{ fontFamily:F, fontSize:14, color:t.done?C.textMuted:C.textPrimary, textDecoration:t.done?"line-through":"none" }}>{t.text}</span>
+                </div>
+              ))}
+              {!active.tasks.length && <p style={{ fontFamily:F, fontSize:13, color:C.textMuted, margin:0 }}>No tasks yet. Add one above.</p>}
+            </>
+          )}
         </Card>
       </div>
     );
@@ -1264,6 +1379,19 @@ function ProjectsScreen({ appData, onUpdateData }) {
       {showNew && (
         <Card style={{ padding:24, marginBottom:24 }}>
           <Field label="Project name" value={newName} onChange={setNewName} placeholder="What are you building?" />
+          <div style={{ marginBottom:18 }}>
+            <label style={{ display:"block", fontFamily:F, fontSize:13, fontWeight:600, color:C.textPrimary, marginBottom:6 }}>Status</label>
+            <div style={{ display:"flex", gap:8 }}>
+              {STATUS_LIST.map(s => <button key={s} onClick={()=>setNewStatus(s)} style={{ background:newStatus===s?`${STATUS_COLOR[s]}20`:C.white, color:STATUS_COLOR[s], border:`1.5px solid ${newStatus===s?STATUS_COLOR[s]:C.border}`, borderRadius:999, padding:"5px 12px", fontFamily:F, fontSize:12, fontWeight:700, cursor:"pointer" }}>{s}</button>)}
+            </div>
+          </div>
+          <div style={{ marginBottom:18 }}>
+            <label style={{ display:"block", fontFamily:F, fontSize:13, fontWeight:600, color:C.textPrimary, marginBottom:6 }}>Priority</label>
+            <div style={{ display:"flex", gap:8 }}>
+              {PRIORITY_LIST.map(p => <button key={p} onClick={()=>setNewPriority(p)} style={{ background:newPriority===p?`${PRIORITY_COLOR[p]}20`:C.white, color:PRIORITY_COLOR[p], border:`1.5px solid ${newPriority===p?PRIORITY_COLOR[p]:C.border}`, borderRadius:999, padding:"5px 12px", fontFamily:F, fontSize:12, fontWeight:700, cursor:"pointer" }}>{p}</button>)}
+            </div>
+          </div>
+          <Field label="Due date (optional)" type="date" value={newDueDate} onChange={setNewDueDate} />
           <div style={{ display:"flex", gap:10 }}>
             <Btn onClick={createProject} disabled={!newName.trim()}>Create</Btn>
             <Btn onClick={() => setShowNew(false)} variant="outline">Cancel</Btn>
@@ -1273,9 +1401,16 @@ function ProjectsScreen({ appData, onUpdateData }) {
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:16 }}>
         {projects.map(p => (
           <Card key={p.id} onClick={() => setSelected(p.id)} style={{ padding:24 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-              <div style={{ width:40, height:40, borderRadius:12, background:`${p.color}20`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>📁</div>
-              <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary }}>{p.name}</div>
+            <div style={{ display:"flex", alignItems:"flex-start", gap:12, marginBottom:12 }}>
+              <div style={{ width:40, height:40, borderRadius:12, background:`${p.color}20`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0 }}>📁</div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontFamily:F, fontWeight:700, fontSize:15, color:C.textPrimary, marginBottom:6 }}>{p.name}</div>
+                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                  <span style={{ background:`${STATUS_COLOR[p.status||"To Do"]}20`, color:STATUS_COLOR[p.status||"To Do"], borderRadius:999, padding:"2px 8px", fontFamily:F, fontSize:11, fontWeight:700 }}>{p.status||"To Do"}</span>
+                  <span style={{ background:`${PRIORITY_COLOR[p.priority||"Medium"]}20`, color:PRIORITY_COLOR[p.priority||"Medium"], borderRadius:999, padding:"2px 8px", fontFamily:F, fontSize:11, fontWeight:700 }}>{p.priority||"Medium"}</span>
+                  {p.dueDate && <span style={{ fontFamily:F, fontSize:11, color:C.textMuted }}>Due {new Date(p.dueDate+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})}</span>}
+                </div>
+              </div>
             </div>
             <div style={{ background:C.border, borderRadius:4, height:6, marginBottom:8, overflow:"hidden" }}>
               <div style={{ width:`${p.progress}%`, height:"100%", background:p.color, borderRadius:4 }} />

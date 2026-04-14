@@ -235,6 +235,44 @@ describe('MessagesScreen', () => {
     await goToMessages(user);
     expect(screen.getByText('DIRECT MESSAGES')).toBeInTheDocument();
   });
+
+  it('shows "+" button to start a new conversation', async () => {
+    const user = renderMainApp();
+    await goToMessages(user);
+    expect(screen.getByTitle('New message')).toBeInTheDocument();
+  });
+
+  it('opens new chat form when "+" is clicked', async () => {
+    const user = renderMainApp();
+    await goToMessages(user);
+    await user.click(screen.getByTitle('New message'));
+    expect(screen.getByPlaceholderText('Enter a name...')).toBeInTheDocument();
+  });
+
+  it('creates a new chat and selects it', async () => {
+    const user = renderMainApp();
+    await goToMessages(user);
+    await user.click(screen.getByTitle('New message'));
+    await user.type(screen.getByPlaceholderText('Enter a name...'), 'Sam Taylor');
+    await user.click(screen.getByRole('button', { name: 'Start Chat' }));
+    // Contact appears in sidebar + chat header (multiple matches expected)
+    expect(screen.getAllByText('Sam Taylor').length).toBeGreaterThan(0);
+  });
+
+  it('Start Chat button is disabled when name is empty', async () => {
+    const user = renderMainApp();
+    await goToMessages(user);
+    await user.click(screen.getByTitle('New message'));
+    expect(screen.getByRole('button', { name: 'Start Chat' })).toBeDisabled();
+  });
+
+  it('Cancel closes the new chat form', async () => {
+    const user = renderMainApp();
+    await goToMessages(user);
+    await user.click(screen.getByTitle('New message'));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByPlaceholderText('Enter a name...')).not.toBeInTheDocument();
+  });
 });
 
 // ── Community ─────────────────────────────────────────────────────────────────
@@ -370,6 +408,79 @@ describe('CommunityScreen', () => {
     await user.click(screen.getByText('Delete'));
     expect(screen.queryByText('Delete me')).not.toBeInTheDocument();
   });
+
+  it('collapses and expands the communities list', async () => {
+    const user = renderMainApp();
+    await goToCommunity(user);
+    // Communities visible by default
+    expect(screen.getByText('Founders Circle')).toBeInTheDocument();
+    // Click the "Communities ▼" header to collapse
+    await user.click(screen.getByText('Communities'));
+    expect(screen.queryByText('Founders Circle')).not.toBeInTheDocument();
+    // Click again to expand
+    await user.click(screen.getByText('Communities'));
+    expect(screen.getByText('Founders Circle')).toBeInTheDocument();
+  });
+});
+
+// ── Community Events tab ───────────────────────────────────────────────────────
+describe('CommunityScreen – Events tab', () => {
+  async function goToEvents(user) {
+    await screen.findByText('Dashboard');
+    await user.click(navBtn('Community'));
+    await user.click(screen.getByText('Founders Circle'));
+    await user.click(screen.getByText('Events'));
+  }
+
+  it('shows the Events tab with a seed event', async () => {
+    const user = renderMainApp();
+    await goToEvents(user);
+    expect(screen.getByText('Founders Weekly Sync')).toBeInTheDocument();
+    expect(screen.getByText('14 people going')).toBeInTheDocument();
+  });
+
+  it('shows Create Event button', async () => {
+    const user = renderMainApp();
+    await goToEvents(user);
+    expect(screen.getByRole('button', { name: /Create Event/i })).toBeInTheDocument();
+  });
+
+  it('opens and submits the create event form', async () => {
+    const user = renderMainApp();
+    await goToEvents(user);
+    await user.click(screen.getByRole('button', { name: /Create Event/i }));
+    await user.type(screen.getByPlaceholderText('Event name'), 'Test Event');
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    expect(screen.getByText('Test Event')).toBeInTheDocument();
+  });
+
+  it('Create button is disabled when title is empty', async () => {
+    const user = renderMainApp();
+    await goToEvents(user);
+    await user.click(screen.getByRole('button', { name: /Create Event/i }));
+    expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled();
+  });
+
+  it('Cancel closes the create event form', async () => {
+    const user = renderMainApp();
+    await goToEvents(user);
+    await user.click(screen.getByRole('button', { name: /Create Event/i }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByPlaceholderText('Event name')).not.toBeInTheDocument();
+  });
+
+  it('toggles RSVP on and off', async () => {
+    const user = renderMainApp();
+    await goToEvents(user);
+    // Initial: "RSVP" button, 14 people going
+    const rsvpBtn = screen.getByRole('button', { name: /RSVP/i });
+    await user.click(rsvpBtn);
+    expect(screen.getByText('15 people going')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /✓ Going/i })).toBeInTheDocument();
+    // Click again to un-RSVP
+    await user.click(screen.getByRole('button', { name: /✓ Going/i }));
+    expect(screen.getByText('14 people going')).toBeInTheDocument();
+  });
 });
 
 // ── Projects ──────────────────────────────────────────────────────────────────
@@ -456,6 +567,47 @@ describe('ProjectsScreen', () => {
     await user.click(screen.getByText('Build community screen').closest('div[style]'));
     // Both tasks done → 100%
     expect(await screen.findByText('100% complete')).toBeInTheDocument();
+  });
+
+  it('shows status and priority badges on project card', async () => {
+    const user = renderMainApp();
+    await goToProjects(user);
+    // Seed project has status "In Progress" and priority "High"
+    expect(screen.getByText('In Progress')).toBeInTheDocument();
+    expect(screen.getByText('High')).toBeInTheDocument();
+  });
+
+  it('cycles status when status badge is clicked in project detail', async () => {
+    const user = renderMainApp();
+    await goToProjects(user);
+    await user.click(screen.getByText('Bridges App'));
+    // Status starts as "In Progress"
+    const statusBtn = screen.getByRole('button', { name: 'In Progress' });
+    await user.click(statusBtn);
+    expect(screen.getByRole('button', { name: 'Done' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.getByRole('button', { name: 'To Do' })).toBeInTheDocument();
+  });
+
+  it('collapses and expands the Tasks section', async () => {
+    const user = renderMainApp();
+    await goToProjects(user);
+    await user.click(screen.getByText('Bridges App'));
+    expect(screen.getByText('Wire up Supabase auth')).toBeInTheDocument();
+    // Click the Tasks header to collapse
+    await user.click(screen.getByText(/Tasks/));
+    expect(screen.queryByText('Wire up Supabase auth')).not.toBeInTheDocument();
+    // Click again to expand
+    await user.click(screen.getByText(/Tasks/));
+    expect(screen.getByText('Wire up Supabase auth')).toBeInTheDocument();
+  });
+
+  it('new project form includes status and priority selectors', async () => {
+    const user = renderMainApp();
+    await goToProjects(user);
+    await user.click(screen.getByText('New Project'));
+    expect(screen.getByRole('button', { name: 'To Do' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'High' })).toBeInTheDocument();
   });
 });
 
