@@ -810,14 +810,14 @@ function TopBar({ title, subtitle, users = [], onUserSelect, onNav, notification
 
 // ── Dashboard feed seed (mirrors data in the other screens) ──────────────────
 const DASHBOARD_FEED = [
-  { id:1,  type:"message",   color:"#34D399", avatar:"AR", source:"Alex Rivera",     body:"Hey! How's the Bridges build going?",                         time:"2m ago",  nav:"messages"  },
-  { id:2,  type:"community", color:"#1A5FAD", avatar:"FC", source:"Founders Circle", body:"Alex R. posted: Just launched our first beta 🎉 Who wants early access?", time:"10m ago", nav:"community" },
+  { id:1,  type:"community", color:"#1A5FAD", avatar:"FC", source:"Founders Circle", body:"New member joined the community · Say hello!",                time:"2m ago",  nav:"community" },
+  { id:2,  type:"community", color:"#1A5FAD", avatar:"FC", source:"Founders Circle", body:"New post: Just launched our first beta 🎉 Who wants early access?", time:"10m ago", nav:"community" },
   { id:3,  type:"project",   color:"#FBBF24", avatar:"BA", source:"Bridges App",     body:"Task completed: Wire up Supabase auth ✓",                      time:"45m ago", nav:"projects"  },
   { id:4,  type:"community", color:"#A78BFA", avatar:"DL", source:"Design Lab",      body:"New member joined · 89 members now",                          time:"1h ago",  nav:"community" },
-  { id:5,  type:"message",   color:"#F472B6", avatar:"JL", source:"Jordan Lee",      body:"Can we sync on the community feature tomorrow?",               time:"2h ago",  nav:"messages"  },
+  { id:5,  type:"project",   color:"#FBBF24", avatar:"BA", source:"Bridges App",     body:"New comment on task: Build community screen",                 time:"2h ago",  nav:"projects"  },
   { id:6,  type:"project",   color:"#FBBF24", avatar:"BA", source:"Bridges App",     body:"New task added: Build community screen",                       time:"3h ago",  nav:"projects"  },
-  { id:7,  type:"community", color:"#1A5FAD", avatar:"FC", source:"Founders Circle", body:"Jordan Lee liked your post · 12 likes total",                 time:"4h ago",  nav:"community" },
-  { id:8,  type:"message",   color:"#34D399", avatar:"AR", source:"Alex Rivera",     body:"Just pushed the new design files 🎨",                          time:"5h ago",  nav:"messages"  },
+  { id:7,  type:"community", color:"#1A5FAD", avatar:"FC", source:"Founders Circle", body:"New activity · 12 reactions on the latest post",              time:"4h ago",  nav:"community" },
+  { id:8,  type:"community", color:"#A78BFA", avatar:"DL", source:"Design Lab",      body:"New design files shared in the community 🎨",                 time:"5h ago",  nav:"community" },
 ];
 
 const FEED_FILTERS = [
@@ -987,14 +987,7 @@ function DashboardScreen({ user, onNav, appData }) {
 function MessagesScreen({ appData, onUpdateData, initialSelectedId, onClearSelectedId }) {
   const [selected, setSelected] = useState(initialSelectedId || null);
   const [input, setInput] = useState("");
-  const [chats, setChats] = useState(
-    MOCK_USERS.map((u, i) => ({
-      ...u,
-      messages: i === 0
-        ? [{ id:1, text:"Hey! How's the Bridges build going?", mine:false, time:"10:32 AM" }]
-        : [{ id:1, text:"Can we sync on the community feature?", mine:false, time:"Yesterday" }],
-    }))
-  );
+  const [chats, setChats] = useState([]);
 
   useEffect(() => {
     if (initialSelectedId) {
@@ -1012,7 +1005,9 @@ function MessagesScreen({ appData, onUpdateData, initialSelectedId, onClearSelec
     <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
       <div style={{ width:280, borderRight:`1px solid ${C.border}`, background:C.white, overflowY:"auto", flexShrink:0 }}>
         <div style={{ padding:"16px 16px 8px", fontFamily:F, fontWeight:700, fontSize:13, color:C.textMuted, letterSpacing:0.5 }}>DIRECT MESSAGES</div>
-        {chats.map(c => (
+        {chats.length === 0
+          ? <div style={{ padding:20 }}><EmptyState icon="💬" title="No messages yet" subtitle="Start a conversation once you connect with people." /></div>
+          : chats.map(c => (
           <div key={c.id} onClick={() => setSelected(c.id)} style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", cursor:"pointer", background:selected===c.id?C.accentLight:"transparent", borderLeft:`3px solid ${selected===c.id?C.accent:"transparent"}`, transition:"all 0.15s" }}>
             <div style={{ position:"relative" }}>
               <div style={{ width:38, height:38, borderRadius:"50%", background:c.color, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:14, fontWeight:700 }}>{c.name.split(" ").map(w=>w[0]).join("")}</div>
@@ -1067,8 +1062,11 @@ function CommunityScreen({ appData, onUpdateData }) {
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [tab, setTab] = useState("board");
-  const [posts, setPosts] = useState([{ id:1, author:"Alex R.", text:"Just launched our first beta 🎉 Who wants early access?", time:"2h ago", likes:12 }]);
+  const [posts, setPosts] = useState([{ id:1, author:"Community", text:"Just launched our first beta 🎉 Who wants early access?", time:"2h ago", reactions:{"👍":12,"❤️":4,"😂":1,"🔥":7} }]);
   const [postInput, setPostInput] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState("");
+  const [menuOpenId, setMenuOpenId] = useState(null);
   const active = communities.find(c => c.id === selected);
 
   const createCommunity = () => {
@@ -1081,7 +1079,7 @@ function CommunityScreen({ appData, onUpdateData }) {
   };
   const addPost = () => {
     if (!postInput.trim()) return;
-    setPosts(p => [{ id:Date.now(), author:"You", text:postInput, time:"Just now", likes:0 }, ...p]);
+    setPosts(p => [{ id:Date.now(), author:"You", text:postInput, time:"Just now", reactions:{"👍":0,"❤️":0,"😂":0,"🔥":0} }, ...p]);
     setPostInput("");
   };
 
@@ -1111,9 +1109,38 @@ function CommunityScreen({ appData, onUpdateData }) {
                   <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
                     <div style={{ width:36, height:36, borderRadius:"50%", background:C.accent, display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:13, fontWeight:700, flexShrink:0 }}>{p.author.split(" ").map(w=>w[0]).join("")}</div>
                     <div style={{ flex:1 }}>
-                      <div style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary }}>{p.author} <span style={{ fontWeight:400, color:C.textMuted, fontSize:12 }}>{p.time}</span></div>
-                      <p style={{ fontFamily:F, fontSize:14, color:C.textPrimary, margin:"6px 0 12px", lineHeight:1.55 }}>{p.text}</p>
-                      <span onClick={() => setPosts(prev => prev.map(x => x.id===p.id ? { ...x, likes:x.likes+1 } : x))} style={{ fontFamily:F, fontSize:12, color:C.textMuted, cursor:"pointer" }}>❤️ {p.likes}</span>
+                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                        <div style={{ fontFamily:F, fontWeight:700, fontSize:14, color:C.textPrimary }}>{p.author} <span style={{ fontWeight:400, color:C.textMuted, fontSize:12 }}>{p.time}</span></div>
+                        {p.author === "You" && (
+                          <div style={{ position:"relative" }}>
+                            <button onClick={() => setMenuOpenId(menuOpenId===p.id ? null : p.id)} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:F, fontSize:16, color:C.textMuted, padding:"0 4px", lineHeight:1 }}>•••</button>
+                            {menuOpenId === p.id && (
+                              <div style={{ position:"absolute", right:0, top:"100%", background:C.white, border:`1px solid ${C.border}`, borderRadius:10, boxShadow:"0 4px 16px rgba(0,0,0,0.10)", zIndex:10, minWidth:110, overflow:"hidden" }}>
+                                <div onClick={() => { setEditingId(p.id); setEditText(p.text); setMenuOpenId(null); }} style={{ padding:"10px 16px", fontFamily:F, fontSize:13, color:C.textPrimary, cursor:"pointer" }} onMouseEnter={e=>e.currentTarget.style.background=C.hover} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>Edit</div>
+                                <div onClick={() => { setPosts(prev => prev.filter(x => x.id !== p.id)); setMenuOpenId(null); }} style={{ padding:"10px 16px", fontFamily:F, fontSize:13, color:"#EF4444", cursor:"pointer" }} onMouseEnter={e=>e.currentTarget.style.background=C.hover} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>Delete</div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {editingId === p.id ? (
+                        <div style={{ marginTop:8 }}>
+                          <textarea value={editText} onChange={e=>setEditText(e.target.value)} style={{ width:"100%", boxSizing:"border-box", border:`1.5px solid ${C.accent}`, borderRadius:10, padding:"10px 14px", fontFamily:F, fontSize:14, resize:"none", height:72, outline:"none" }} />
+                          <div style={{ display:"flex", gap:8, marginTop:8 }}>
+                            <Btn onClick={() => { setPosts(prev => prev.map(x => x.id===p.id ? {...x, text:editText} : x)); setEditingId(null); }} small>Save</Btn>
+                            <Btn onClick={() => setEditingId(null)} small variant="outline">Cancel</Btn>
+                          </div>
+                        </div>
+                      ) : (
+                        <p style={{ fontFamily:F, fontSize:14, color:C.textPrimary, margin:"6px 0 10px", lineHeight:1.55 }}>{p.text}</p>
+                      )}
+                      <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                        {["👍","❤️","😂","🔥"].map(emoji => (
+                          <button key={emoji} onClick={() => setPosts(prev => prev.map(x => x.id===p.id ? {...x, reactions:{...x.reactions, [emoji]: x.reactions[emoji]+1}} : x))} style={{ display:"flex", alignItems:"center", gap:4, background:C.pageBg, border:`1px solid ${C.border}`, borderRadius:999, padding:"4px 10px", fontFamily:F, fontSize:12, color:C.textSecondary, cursor:"pointer" }}>
+                            {emoji} <span>{p.reactions[emoji]}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -1415,26 +1442,25 @@ const TITLES = {
   profile:["Profile","Manage your account"], settings:["Settings","Customize your experience"],
 };
 
-// Shared user directory — used by both MessagesScreen and TopBar search
-const MOCK_USERS = [
-  { id:1, name:"Alex Rivera", color:"#34D399", online:true },
-  { id:2, name:"Jordan Lee", color:"#F472B6", online:false },
-];
-
 // appData stats counts to match each screen's own initial state
 const DEMO_SEED = {
-  messages:    [1, 2],           // 2 contacts (MOCK_USERS)
+  messages:    [],               // no fake contacts
   communities: [1, 2],           // 2 communities (Founders Circle + Design Lab)
   projects:    [1],              // 1 project (Bridges App)
   events:      [],
 };
 
 function MainApp({ user, onSignOut, onUpdateUser, isDemo }) {
-  const [tab, setTab] = useState("dashboard");
+  const [tab, setTab] = useState(() => {
+    const saved = localStorage.getItem("bridges_tab");
+    return Object.keys(TITLES).includes(saved) ? saved : "dashboard";
+  });
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [appData, setAppData] = useState(isDemo ? DEMO_SEED : { messages:[], communities:[], projects:[], events:[] });
   const updateData = patch => setAppData(d => ({ ...d, ...patch }));
   const [title, subtitle] = TITLES[tab] || ["Bridges",""];
+
+  useEffect(() => { localStorage.setItem("bridges_tab", tab); }, [tab]);
 
   const handleUserSelect = (u) => {
     setSelectedChatId(u.id);
@@ -1455,7 +1481,7 @@ function MainApp({ user, onSignOut, onUpdateUser, isDemo }) {
         <TopBar
           title={tab==="dashboard"?`Welcome, ${user?.name?.split(" ")[0]||"there"} 👋`:title}
           subtitle={subtitle}
-          users={MOCK_USERS}
+          users={[]}
           onUserSelect={handleUserSelect}
           onNav={setTab}
         />

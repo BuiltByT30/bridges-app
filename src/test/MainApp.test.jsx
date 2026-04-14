@@ -36,6 +36,7 @@ function renderMainApp(userMeta = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   mockUpdateUser.mockResolvedValue({ data: {}, error: null });
 });
 
@@ -96,20 +97,18 @@ describe('Sidebar navigation', () => {
 
 // ── TopBar search ─────────────────────────────────────────────────────────────
 describe('TopBar – user search', () => {
-  it('shows all users in dropdown when search input is focused', async () => {
+  it('shows "No people to show" when search input is focused with no contacts', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
     await user.click(screen.getByPlaceholderText(/Search people/i));
-    // "Alex Rivera" also appears in the feed — check for the online indicator unique to the dropdown
-    expect(await screen.findByText('● Online now')).toBeInTheDocument();
+    expect(await screen.findByText('No people to show')).toBeInTheDocument();
   });
 
-  it('shows matching user in dropdown when typing', async () => {
+  it('shows "No results" when typing with no contacts', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
     await user.type(screen.getByPlaceholderText(/Search people/i), 'Alex');
-    // Dropdown shows the online status label — unique to the search dropdown
-    expect(await screen.findByText('● Online now')).toBeInTheDocument();
+    expect(await screen.findByText(/No results for "Alex"/i)).toBeInTheDocument();
   });
 
   it('shows "No results" for unmatched query', async () => {
@@ -119,22 +118,21 @@ describe('TopBar – user search', () => {
     expect(await screen.findByText(/No results/i)).toBeInTheDocument();
   });
 
-  it('navigates to Messages and pre-selects user chat when result is clicked', async () => {
+  it('Escape key closes search and clears input', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.type(screen.getByPlaceholderText(/Search people/i), 'Jordan');
-    // Wait for dropdown then click the result
-    const results = await screen.findAllByText('Jordan Lee');
-    await user.click(results[0]);
-    // Jordan's message appears in the chat
-    expect((await screen.findAllByText('Can we sync on the community feature?')).length).toBeGreaterThan(0);
+    await user.type(screen.getByPlaceholderText(/Search people/i), 'test');
+    expect(await screen.findByText(/No results/i)).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByText(/No results/i)).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Search people/i)).toHaveValue('');
   });
 
-  it('searches are case-insensitive', async () => {
+  it('shows search input on every screen', async () => {
     const user = renderMainApp();
     await screen.findByText('Dashboard');
-    await user.type(screen.getByPlaceholderText(/Search people/i), 'alex');
-    expect(await screen.findByText('● Online now')).toBeInTheDocument();
+    await user.click(screen.getByText('Messages', { selector: 'span' }));
+    expect(screen.getByPlaceholderText(/Search people/i)).toBeInTheDocument();
   });
 });
 
@@ -226,39 +224,16 @@ describe('MessagesScreen', () => {
     expect(screen.getByText('Your Messages')).toBeInTheDocument();
   });
 
-  it('opens a chat when a contact is clicked', async () => {
+  it('shows "No messages yet" empty state in contacts list', async () => {
     const user = renderMainApp();
     await goToMessages(user);
-    await user.click(screen.getByText('Alex Rivera'));
-    // Message appears in both preview AND chat bubble — queryAllByText handles multiple
-    expect(screen.queryAllByText("Hey! How's the Bridges build going?").length).toBeGreaterThan(0);
+    expect(screen.getByText('No messages yet')).toBeInTheDocument();
   });
 
-  it('sends a message and clears the input', async () => {
+  it('shows DIRECT MESSAGES heading in contacts panel', async () => {
     const user = renderMainApp();
     await goToMessages(user);
-    await user.click(screen.getByText('Alex Rivera'));
-    const input = screen.getByPlaceholderText('Type a message...');
-    await user.type(input, 'Hello there!');
-    await user.click(screen.getByRole('button', { name: 'Send' }));
-    // Message appears in both the preview and the chat bubble
-    expect(screen.queryAllByText('Hello there!').length).toBeGreaterThan(0);
-    expect(input.value).toBe('');
-  });
-
-  it('sends message on Enter key', async () => {
-    const user = renderMainApp();
-    await goToMessages(user);
-    await user.click(screen.getByText('Alex Rivera'));
-    await user.type(screen.getByPlaceholderText('Type a message...'), 'Enter message{Enter}');
-    expect(screen.queryAllByText('Enter message').length).toBeGreaterThan(0);
-  });
-
-  it('Send button is disabled when input is empty', async () => {
-    const user = renderMainApp();
-    await goToMessages(user);
-    await user.click(screen.getByText('Alex Rivera'));
-    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+    expect(screen.getByText('DIRECT MESSAGES')).toBeInTheDocument();
   });
 });
 
@@ -347,12 +322,53 @@ describe('CommunityScreen', () => {
     expect(screen.getByRole('button', { name: 'Post' })).toBeDisabled();
   });
 
-  it('increments like count when ❤️ is clicked', async () => {
+  it('shows emoji reaction buttons on board posts', async () => {
     const user = renderMainApp();
     await goToCommunity(user);
     await user.click(screen.getByText('Founders Circle'));
-    await user.click(screen.getByText('❤️ 12'));
-    expect(screen.getByText('❤️ 13')).toBeInTheDocument();
+    // All 4 emoji reaction buttons should be visible on the seed post
+    expect(screen.getByRole('button', { name: /👍/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /❤️/ })).toBeInTheDocument();
+  });
+
+  it('increments reaction count when an emoji button is clicked', async () => {
+    const user = renderMainApp();
+    await goToCommunity(user);
+    await user.click(screen.getByText('Founders Circle'));
+    // 👍 starts at 12 in the seed data
+    await user.click(screen.getByRole('button', { name: /👍/ }));
+    expect(screen.getByRole('button', { name: /👍/ })).toHaveTextContent('13');
+  });
+
+  it('can edit own post on the board', async () => {
+    const user = renderMainApp();
+    await goToCommunity(user);
+    await user.click(screen.getByText('Founders Circle'));
+    // Post a new message (as "You")
+    await user.type(screen.getByPlaceholderText('Share something with the community...'), 'Edit me');
+    await user.click(screen.getByRole('button', { name: 'Post' }));
+    // Open the ••• menu and click Edit
+    await user.click(screen.getByRole('button', { name: '•••' }));
+    await user.click(screen.getByText('Edit'));
+    // Clear textarea and type new content
+    const textarea = screen.getByDisplayValue('Edit me');
+    await user.clear(textarea);
+    await user.type(textarea, 'Updated text');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(screen.getByText('Updated text')).toBeInTheDocument();
+    expect(screen.queryByText('Edit me')).not.toBeInTheDocument();
+  });
+
+  it('can delete own post from the board', async () => {
+    const user = renderMainApp();
+    await goToCommunity(user);
+    await user.click(screen.getByText('Founders Circle'));
+    await user.type(screen.getByPlaceholderText('Share something with the community...'), 'Delete me');
+    await user.click(screen.getByRole('button', { name: 'Post' }));
+    expect(screen.getByText('Delete me')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '•••' }));
+    await user.click(screen.getByText('Delete'));
+    expect(screen.queryByText('Delete me')).not.toBeInTheDocument();
   });
 });
 
